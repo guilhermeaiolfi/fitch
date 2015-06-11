@@ -15,6 +15,7 @@
 // use \fitch\SqlFitch as SqlFitch;
 // use \fitch\Fitch as Fitch;
 // use \fitch\ArrayHydration as ArrayHydration;
+use \fitch\Meta as Meta;
 error_reporting(E_ALL ^ E_NOTICE);
 class SqlGenerationTest extends PHPUnit_Framework_TestCase
 {
@@ -42,8 +43,6 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
   protected $relation_and_field_imploded = array(
     "name" => "schools",
     "type" => "Segment",
-    "ids" => null,
-    "functions" => array(),
     "fields" => array(
       array(
         "name" => "id",
@@ -62,13 +61,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
     array(
       "name" => "schools",
       "type" => "Segment",
-      "ids" => null,
-      "functions" => array(),
       "fields" => array(
-        array(
-          "name" => "id",
-          "alias" => "code"
-        ),
         array(
           "name" => "name"
         ),
@@ -77,10 +70,6 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           "fields" => array(
             array(
               "name" => "name"
-            ),
-            array(
-              "name" => "id",
-              "alias" => "coderelation1"
             )
           )
         )
@@ -156,7 +145,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  public function testFirstLevel()
+  /*public function testManyToManyTwoLevelDeep()
   {
     $double = $this->double;
     $meta = $this->meta;
@@ -164,21 +153,69 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
     $token = is_array($double)? $double[0] : $double;
     $segment = new \fitch\fields\Segment($token);
 
+    $meta = new Meta($meta);
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
-    $expected = "SELECT schools.id AS code, schools.name, departments.name, departments.id AS coderelation1 FROM schools AS schools LEFT JOIN school_department schools_departments ON (schools_departments.school_id = schools.id)  LEFT JOIN departments departments ON (departments.id = schools_departments.department_id)";
+    $expected = "SELECT schools.id AS schools_id, schools.name, departments.id AS departments_id, departments.name FROM schools AS schools LEFT JOIN school_department schools_departments ON (schools_departments.school_id = schools.id)  LEFT JOIN departments departments ON (departments.id = schools_departments.department_id)";
 
-    $this->assertEquals($sql, $expected);
+    $this->assertEquals($expected, $sql);
 
+    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $rows = array (
+              array(1, "School #1", 1, "Department #1"),
+              array(2, "School #2", 1, "Department #1"),
+              array(1, "School #1", 2, "Department #2")
+            );
 
-    $pdo = new PDO( "mysql:dbname=htsql;host=localhost", "root", "elogical" );
+    $nested = $populator->getResult($rows);
+    $expected = array(
+      "1" => array("name" => "School #1", "departments" => array("1" => array("name" => "Department #1"), "2" => array("name" => "Department #2"))),
+      "2" => array("name" => "School #2", "departments" => array("1" => array("name" => "Department #1")))
+    );
+    $this->assertEquals($nested,$expected);
+  }*/
 
-    $q = $pdo->query($sql);
+  public function testManyToManyOneLevelDeep()
+  {
+    $token = array(
+      "name" => "schools",
+      "type" => "Segment",
+      "fields" => array(
+        array(
+          "name" => "name"
+        ),
+        array(
+          "name" => "departments.name"
+        )
+      )
+    );
 
-    $populator = new \fitch\sql\ArrayHydration($q, $segment);
-    $normalized = $populator->getResult();
-    //print_r($normalized);
+    $meta = $this->meta;
+
+    $segment = new \fitch\fields\Segment($token);
+
+    $meta = new Meta($meta);
+    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+    $expected = "SELECT schools.id AS schools_id, schools.name, departments.id AS departments_id, departments.name FROM schools AS schools LEFT JOIN school_department schools_departments ON (schools_departments.school_id = schools.id)  LEFT JOIN departments departments ON (departments.id = schools_departments.department_id)";
+
+    $this->assertEquals($expected, $sql);
+
+    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $rows = array (
+              array(1, "School #1", 1, "Department #1"),
+              array(2, "School #2", 1, "Department #1"),
+              array(1, "School #1", 2, "Department #2")
+            );
+
+    $nested = $populator->getResult($rows);
+    $expected = array(
+      "1" => array("name" => "School #1", "departments.name" => array("Department #1", "Department #2")),
+      "2" => array("name" => "School #2", "departments.name" => "Department #1")
+    );
+    $this->assertEquals($nested,$expected);
   }
 
 }

@@ -41,7 +41,7 @@ class Query {
   }
 
   public function getJoinSql($join, $meta) {
-    $meta = isset($meta[$join->getName()])? $meta[$join->getName()] : array();
+    $meta = $meta->getRelationConnections($join->getName());
     if (count($meta) == 2) {
       return $this->getManyToManyJoin($join, $meta);
     }
@@ -88,7 +88,13 @@ class Query {
     $sql = "SELECT ";
 
     $fields = array_map(function($value) {
-      return $value->getParent()->getAliasOrName() . "." . $value->getName() . ($value->getAlias()? (" AS " . $value->getAlias()) : "");
+      if (!$value->hasDot()) {
+        return $value->getParent()->getAliasOrName() . "." . $value->getName() . ($value->getAlias()? (" AS " . $value->getAlias()) : "");
+      } else {
+        $parts = $value->getParts();
+        $n = count($parts);
+        return $parts[$n-2] . "." . $parts[$n-1] . ($value->getAlias()? (" AS " . $value->getAlias()) : "");
+      }
     }, $this->getFields());
 
     $sql .= (empty($fields)? "*" : implode(", ", $fields)) . " FROM " . $this->getTable();

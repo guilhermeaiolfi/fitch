@@ -4,7 +4,7 @@ namespace fitch\fields;
 
 use \fitch\Join as Join;
 
-class Relation extends \fitch\Node {
+class Relation extends \fitch\fields\Field {
   public function getJoins() {
     $parts = explode(".", $this->getName());
     $joins = [];
@@ -20,6 +20,18 @@ class Relation extends \fitch\Node {
       }
     }
     return $joins;
+  }
+  public function getRelationName() {
+    $parts = explode(".", $this->getName());
+    $n = count($parts);
+    if ($n == 1) {
+      if ($this->getParent()) {
+        return $this->getParent()->getName() . "." . $parts[0];
+      } else {
+        return $parts[0];
+      }
+    }
+    return $parts[$n-2] . "." . $parts[$n - 1];
   }
 }
 

@@ -8,22 +8,26 @@ use \fitch\fields\Field as Field;
 class ArrayHydration {
   protected $query = null;
   protected $segment = null;
-  public function __construct($query, $segment) {
+  protected $meta = null;
+  public function __construct($query, $segment, $meta = null) {
     $this->query = $query;
     $this->segment = $segment;
+    $this->meta = $meta;
   }
-  public function getResult() {
+  public function getResult($rows) {
 
-    $fields = $this->segment->getListOf("\\fitch\\fields\\Field");
+    $fields = $this->query->getFields();
     $segment = $this->segment;
     $query = $this->query;
 
     $result = array();
     $index = 0;
     $current = &$result;
-    while($row = $query->fetch()) {
+    foreach($rows as $row) {
+      //print_r($row);
       $id_label = $segment->getAliasOrName();
-
+      //print_r($row);
+      //print_r($fields);
       foreach ($row as $key => $value) {
         if (!is_numeric($key)) { continue; }
         $field = $fields[$key];
@@ -32,12 +36,25 @@ class ArrayHydration {
     }
     return $result;
   }
-  public function setArrayValue(&$result, $field, $row, $value) {
-    $current = $field;
-    if (empty($result[$row["code"]])) {
-      $result[$row["code"]] = array();
+  public function getPrimaryKeyHashIndexFrom($relation) {
+    $i = 0;
+    foreach ($this->query->getFields() as $field) {
+      //echo get_class($field);exit;
+      if ($field instanceof \fitch\fields\PrimaryKeyHash && $field->getParent() == $relation) {
+        return $i;
+      }
+      $i++;
     }
-    $arr = &$result[$row["code"]];
+    return -1;
+  }
+  public function setArrayValue(&$result, $field, $row, $value) {
+    if ($field instanceof \fitch\fields\PrimaryKeyHash) return;
+    $current = $field;
+    $main_key = $this->getPrimaryKeyHashIndexFrom($field->getParent("\\fitch\\fields\\Segment"));
+    if (empty($result[$row[$main_key]])) {
+      $result[$row[$main_key]] = array();
+    }
+    $arr = &$result[$row[$main_key]];
     $name = $field->getName();
 
     $parents = $field->getParents();
@@ -51,12 +68,13 @@ class ArrayHydration {
         }
         $arr = &$arr[$name];
 
-        if (empty($arr[$row["coderelation1"]])) {
+        $key = $this->getPrimaryKeyHashIndexFrom($relation);
+        if (empty($arr[$row[$key]])) {
           // here we should test if it could return more tan one record
           // and create a array of records if it can, otherwise use just the array of the record
-          $arr[$row["coderelation1"]] = array();
+          $arr[$row[$key]] = array();
         }
-        $arr = &$arr[$row["coderelation1"]];
+        $arr = &$arr[$row[$key]];
         continue;
       }
     }

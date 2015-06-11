@@ -4,6 +4,7 @@ namespace fitch;
 
 use \fitch\fields\Field as Field;
 use \fitch\fields\Relation as Relation;
+use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class Node {
 
