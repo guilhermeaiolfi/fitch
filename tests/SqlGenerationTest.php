@@ -162,7 +162,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
     $meta = $this->meta;
 
     $token = is_array($double)? $double[0] : $double;
-    $segment = new \fitch\Segment($token);
+    $segment = new \fitch\fields\Segment($token);
 
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -178,7 +178,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
 
     $populator = new \fitch\sql\ArrayHydration($q, $segment);
     $normalized = $populator->getResult();
-    print_r($normalized);
+    //print_r($normalized);
   }
 
 }

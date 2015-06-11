@@ -1,6 +1,8 @@
 <?php
 
-namespace fitch;
+namespace fitch\fields;
+
+use \fitch\Node as Node;
 
 class Field extends Node {
   private $fullname = null;

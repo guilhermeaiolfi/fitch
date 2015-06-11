@@ -2,6 +2,9 @@
 
 namespace fitch;
 
+use \fitch\fields\Field as Field;
+use \fitch\fields\Relation as Relation;
+
 class Node {
 
   protected $children = array();

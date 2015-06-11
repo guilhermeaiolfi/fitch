@@ -1,8 +1,10 @@
 <?php
 
-namespace fitch;
+namespace fitch\fields;
 
-class Relation extends Node {
+use \fitch\Join as Join;
+
+class Relation extends \fitch\Node {
   public function getJoins() {
     $parts = explode(".", $this->getName());
     $joins = [];

@@ -2,6 +2,9 @@
 
 namespace fitch\sql;
 
+use \fitch\fields\Relation as Relation;
+use \fitch\fields\Field as Field;
+
 class ArrayHydration {
   protected $query = null;
   protected $segment = null;
@@ -11,7 +14,7 @@ class ArrayHydration {
   }
   public function getResult() {
 
-    $fields = $this->segment->getListOf("fitch\Field");
+    $fields = $this->segment->getListOf("\\fitch\\fields\\Field");
     $segment = $this->segment;
     $query = $this->query;
 
