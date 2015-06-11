@@ -32,6 +32,32 @@ class Field extends Node {
     return explode(".", $this->getName());
   }
 
+  public function getRelationName() {
+    if (is_a($this, "\\fitch\\fields\\Relation")) {
+      $parts = explode(".", $this->getName());
+      $n = count($parts);
+      if ($n == 1) {
+        if ($this->getParent()) {
+          return $this->getParent()->getName() . "." . $parts[0];
+        } else {
+          return $parts[0];
+        }
+      }
+      return $parts[$n-2] . "." . $parts[$n - 1];
+    } else {
+      if (!$this->hasDot()) { return $this->getParent()->getName(); }
+      $parts = $this->getParts();
+      $n = count($parts);
+      $parent = $this->getParent();
+      if ($n == 2) {
+        return $parent->getName() . "." . $parts[0];
+      } else {
+        return $parts[$n - 3] . "." . $parts[$n - 2];
+      }
+    }
+    return null;
+  }
+
   public function getListOf($type) {
     $pending = array();
     $current = $this;

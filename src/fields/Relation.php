@@ -21,18 +21,6 @@ class Relation extends \fitch\fields\Field {
     }
     return $joins;
   }
-  public function getRelationName() {
-    $parts = explode(".", $this->getName());
-    $n = count($parts);
-    if ($n == 1) {
-      if ($this->getParent()) {
-        return $this->getParent()->getName() . "." . $parts[0];
-      } else {
-        return $parts[0];
-      }
-    }
-    return $parts[$n-2] . "." . $parts[$n - 1];
-  }
 }
 
 ?>

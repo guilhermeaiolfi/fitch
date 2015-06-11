@@ -40,25 +40,12 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  protected $relation_and_field_imploded = array(
-    "name" => "schools",
-    "type" => "Segment",
-    "fields" => array(
-      array(
-        "name" => "id",
-        "alias" => "code"
-      ),
-      array(
-        "name" => "name"
-      ),
-      array(
-        "name" => "departments.name"
-      )
-    )
-  );
+  public function testManyToManyTwoLevelDeep()
+  {
+    $double = $this->double;
+    $meta = $this->meta;
 
-  protected $double = array(
-    array(
+    $token = array(
       "name" => "schools",
       "type" => "Segment",
       "fields" => array(
@@ -73,84 +60,9 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
             )
           )
         )
-        // array(
-        //   "name" => "departments.id",
-        //   "alias" => "code"
-        // )
-        // array(
-        //   "name" => "program",
-        //   "fields" => array(
-        //     array(
-        //       "name" => "name"
-        //     )
-        //   )
-        // ),
-        // array(
-        //   "name" => "director",
-        //   "fields" => array(
-        //     array(
-        //       "name" => "name"
-        //     ),
-        //     array(
-        //       "name" => "id"
-        //     )
-        //   )
-        // )
       )
-    ),
-    array(
-      "name" => "table1",
-      "type" => "Segment",
-      "ids" => null,
-      "functions" => array(),
-      "fields" => array(
-        array(
-          "name" => "id",
-          "alias" => "code"
-        ),
-        array(
-          "name" => "name"
-        ),
-        array(
-          "name" => "owner.name"
-        )
-      ),
-      "conditions" => array(
-        array(
-          "left" => "id",
-          "operator" => "=",
-          "right" => 12
-        ),
-        array(
-          "left" => "abc",
-          "operator" => "=",
-          "right" => "12"
-        )
-      )
-    ),
-    array(
-      "name" => "table2",
-      "alias" => "users",
-      "type" => "Segment",
-      "ids" => null,
-      "functions" => array(),
-      "fields" => null,
-      "conditions" => array(
-        array(
-          "left" => "abc.are",
-          "operator" => "=",
-          "right" => 12
-        )
-      )
-    )
-  );
+    );
 
-  /*public function testManyToManyTwoLevelDeep()
-  {
-    $double = $this->double;
-    $meta = $this->meta;
-
-    $token = is_array($double)? $double[0] : $double;
     $segment = new \fitch\fields\Segment($token);
 
     $meta = new Meta($meta);
@@ -174,7 +86,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       "2" => array("name" => "School #2", "departments" => array("1" => array("name" => "Department #1")))
     );
     $this->assertEquals($nested,$expected);
-  }*/
+  }
 
   public function testManyToManyOneLevelDeep()
   {
@@ -213,11 +125,10 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
     $nested = $populator->getResult($rows);
     $expected = array(
       "1" => array("name" => "School #1", "departments.name" => array("Department #1", "Department #2")),
-      "2" => array("name" => "School #2", "departments.name" => "Department #1")
+      "2" => array("name" => "School #2", "departments.name" => array("Department #1"))
     );
-    $this->assertEquals($nested,$expected);
+    $this->assertEquals($expected, $nested);
   }
-
 }
 
 

@@ -20,5 +20,8 @@ class Meta {
     $last = array_pop($connections);
     return explode(".", $last)[0];
   }
+  public function isManyToManyRelation($relation_name) {
+    return count($this->meta[$relation_name]) == 2;
+  }
 }
 ?>

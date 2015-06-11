@@ -47,8 +47,8 @@ class ArrayHydration {
     }
     return -1;
   }
-  public function setArrayValue(&$result, $field, $row, $value) {
-    if ($field instanceof \fitch\fields\PrimaryKeyHash) return;
+  public function &makePath(&$result, $field, $row) {
+    $meta = $this->meta;
     $current = $field;
     $main_key = $this->getPrimaryKeyHashIndexFrom($field->getParent("\\fitch\\fields\\Segment"));
     if (empty($result[$row[$main_key]])) {
@@ -78,18 +78,30 @@ class ArrayHydration {
         continue;
       }
     }
+    return $arr;
+  }
+  public function setArrayValue(&$result, $field, $row, $value) {
+    if ($field instanceof \fitch\fields\PrimaryKeyHash) return;
+
+    $arr = &$this->makePath($result, $field, $row);
+
     $name = $field->getName();
-    if (empty($arr[$name])) {
+
+    if (!$this->canRepeat($field)) {
       $arr[$name] = $value;
-    } else if (!is_array($arr[$name]) && $arr[$name] != $value) {
-      $prev = $arr[$name];
-      $arr[$name] = array();
-      $arr[$name][] = $prev;
-      $arr[$name][] = $value;
-    } else if (is_array($arr[$name])){
+    } else {
+      if (empty($arr[$name])) {
+        $arr[$name] = array();
+      }
       $arr[$name][] = $value;
     }
+
     return $result;
+  }
+  public function canRepeat($field) {
+    $meta = $this->meta;
+
+    return $meta->isManyToManyRelation($field->getRelationName());
   }
 }
 
