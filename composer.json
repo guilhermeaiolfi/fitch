@@ -1,0 +1,21 @@
+{
+    "name": "guilhermeaiolfi/fitch",
+    "description": "Fit + Fetch = Fitch Query Language",
+    "authors": [
+        {
+            "name": "Guilherme R. Aiolfi",
+            "email": "gradinf@gmail.com"
+        }
+    ],
+    "require": {
+
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.1.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "fitch\\": "src/"
+        }
+    }
+}
