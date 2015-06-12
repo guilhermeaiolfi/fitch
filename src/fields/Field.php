@@ -15,7 +15,7 @@ class Field extends Node {
   public function setGenerated($b) {
     $this->generated = $b;
   }
-  public function getGenerated($b) {
+  public function getGenerated() {
     return $this->generated;
   }
   public function getFullname() {

@@ -1,20 +1,5 @@
 <?php
 
-// include __DIR__ . "/../vendor/autoload.php";
-// include __DIR__ . "/../src/Node.php";
-// include __DIR__ . "/../src/Field.php";
-// include __DIR__ . "/../src/Segment.php";
-// include __DIR__ . "/../src/Relation.php";
-// include __DIR__ . "/../src/Query.php";
-// include __DIR__ . "/../src/Fitch.php";
-// include __DIR__ . "/../src/ArrayHydration.php";
-// include __DIR__ . "/../src/SqlFitch.php";
-
-// use \fitch\Segment as Segment;
-// use \fitch\Relation as Relation;
-// use \fitch\SqlFitch as SqlFitch;
-// use \fitch\Fitch as Fitch;
-// use \fitch\ArrayHydration as ArrayHydration;
 use \fitch\Meta as Meta;
 error_reporting(E_ALL ^ E_NOTICE);
 class SqlGenerationTest extends PHPUnit_Framework_TestCase
@@ -82,8 +67,17 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
 
     $nested = $populator->getResult($rows);
     $expected = array(
-      "1" => array("name" => "School #1", "departments" => array("1" => array("name" => "Department #1"), "2" => array("name" => "Department #2"))),
-      "2" => array("name" => "School #2", "departments" => array("1" => array("name" => "Department #1")))
+      "schools" => array(
+        "1" => array("name" => "School #1", "departments" => array(
+            "1" => array("name" => "Department #1"),
+            "2" => array("name" => "Department #2")
+          )
+        ),
+        "2" => array("name" => "School #2", "departments" => array(
+            "1" => array("name" => "Department #1")
+          )
+        )
+      )
     );
     $this->assertEquals($nested,$expected);
   }
@@ -124,8 +118,10 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
 
     $nested = $populator->getResult($rows);
     $expected = array(
-      "1" => array("name" => "School #1", "departments.name" => array("Department #1", "Department #2")),
-      "2" => array("name" => "School #2", "departments.name" => array("Department #1"))
+      "schools" => array(
+        "1" => array("name" => "School #1", "departments.name" => array("1" => "Department #1", "2" => "Department #2")),
+        "2" => array("name" => "School #2", "departments.name" => array("1" => "Department #1"))
+      )
     );
     $this->assertEquals($expected, $nested);
   }
