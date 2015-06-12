@@ -24,11 +24,11 @@ class ArrayHydration {
 
     $i = 0;
     while ($field = array_shift($pending)) {
-      $name = $field->getName();
+      $alias = $field->getAliasOrName();
       if (is_a($field, "\\fitch\\fields\\Relation")) {
-        $pointer[$name] = array();
-        $pointer = &$pointer[$name];
-        $pointer["_name"] = $name;
+        $pointer[$alias] = array();
+        $pointer = &$pointer[$alias];
+        $pointer["_name"] = $alias;
         $pointer["_type"] = "relation";
         $pointer["_leaf"] = false;
         $pointer["_many"] = $field == $this->segment || $meta->isManyToManyRelation($field->getRelationName())? true : false;
@@ -39,21 +39,21 @@ class ArrayHydration {
         $pointer["_children"] = array();
         $pointer = &$pointer['_children'];
       } else {
-        $pointer[$name] = array();
+        $pointer[$alias] = array();
+        $name = $field->getName();
         if (strpos($name,".") !== FALSE)  {
-          $pointer[$name]["_id"] = array("_name" => "_id", "_column_index" => $i, "_type" => "primary_key");
+          $pointer[$alias]["_id"] = array("_name" => "_id", "_column_index" => $i, "_type" => "primary_key");
           $i++;
         }
-        $pointer[$name]["_name"] = $name;
-        $pointer[$name]["_leaf"] = true;
-        $pointer[$name]["_type"] = "field";
-        $pointer[$name]["_many"] = $meta->isManyToManyRelation($field->getRelationName());
-        $pointer[$name]["_column_index"] = $i;
+        $pointer[$alias]["_name"] = $alias;
+        $pointer[$alias]["_leaf"] = true;
+        $pointer[$alias]["_type"] = "field";
+        $pointer[$alias]["_many"] = $meta->isManyToManyRelation($field->getRelationName());
+        $pointer[$alias]["_column_index"] = $i;
 
       }
       $i++;
     }
-
     return $mapping;
   }
   public function getResult($rows) {
