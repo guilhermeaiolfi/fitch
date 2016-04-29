@@ -19,7 +19,7 @@ start
   / FieldBlock
 
 Segment
-  = segment:"\\" segment:Identifier ids:("[" ArgumentList "]")? functions:FunctionList? fields:FieldBlock? conditions:ConditionList? { return { name: segment, type: 'Segment', ids: ids? ids[1] : null, functions: functions, fields: fields, conditions: conditions }; }
+  = segment:"/" segment:Identifier ids:("[" LocatorList "]")? functions:FunctionList? whitespaces? fields:FieldBlock? conditions:ConditionList? { return { name: segment, type: 'Segment', ids: ids? ids[1] : null, functions: functions, fields: fields, conditions: conditions }; }
 
 ConditionList
   = "?" first:Condition rest:("&" Condition)* { return buildList(first, rest, 1); }
@@ -34,15 +34,24 @@ FunctionList
   = functions:("." Function)* { return extractList(functions, 1); }
 
 Function
-  = name:Identifier "(" arguments: ArgumentList ")" { return { type: 'Function', name: name, arguments: arguments }; }
+  = name:Identifier "(" params:ArgumentList? ")" { return { type: 'Function', name: name, arguments: params }; }
 
+Locator 
+  = Value
+  / Identifier
+ 
+LocatorList
+  = first:Locator rest:(whitespaces? "," whitespaces? Locator)* {
+       return buildList(first, rest, 1);
+     }
+  
 ArgumentList
-  = first:Value rest:("," Value)* {
+  = first:Identifier rest:("," Identifier)* {
        return buildList(first, rest, 1);
      }
 
 FieldList
-  = first:(Field) rest:("," Field)* {
+  = first:(Field) rest:("," whitespaces? Field)* {
       return buildList(first, rest, 1);
     }
 
@@ -193,6 +202,8 @@ _ "whitespace"
 whitespace
   = [ \t\n\r]
 
+whitespaces
+  = whitespace*
 nl
   = "\n"
   / "\r\n"
