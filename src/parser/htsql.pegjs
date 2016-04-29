@@ -1,16 +1,18 @@
 {
-  function extractList(list, index) {
-    var result = new Array(list.length), i;
+  function extractList($list, $index) {
+    //print_r($list);
+    $len = count($list);
+    $result = array();
 
-    for (i = 0; i < list.length; i++) {
-      result[i] = list[i][index];
+    for ($i = 0; $i < $len; $i++) {
+      $result[$i] = $list[$i][$index];
     }
 
-    return result;
+    return $result;
   }
 
-  function buildList(first, rest, index) {
-    return [first].concat(extractList(rest, index));
+  function buildList($first, $rest, $index) {
+    return array_merge(array($first),extractList($rest, $index));
   }
 }
 
@@ -19,40 +21,50 @@ start
   / FieldBlock
 
 Segment
-  = segment:"/" segment:Identifier ids:("[" LocatorList "]")? functions:FunctionList? whitespaces? fields:FieldBlock? conditions:ConditionList? { return { name: segment, type: 'Segment', ids: ids? ids[1] : null, functions: functions, fields: fields, conditions: conditions }; }
+  = segment:"/" segment:Identifier ids:("[" LocatorList "]")? functions:FunctionList? whitespaces? fields:FieldBlock? conditions:ConditionList? { return array( "name" => $segment, "type" => 'Segment', "ids" => $ids? $ids[1] : null, "functions" => $functions, "fields" => $fields, "conditions" => $conditions ); }
 
 ConditionList
-  = "?" first:Condition rest:("&" Condition)* { return buildList(first, rest, 1); }
+  = "?" first:Condition rest:("&" Condition)* { return buildList($first, $rest, 1); }
 
 Condition
-  = left:DottedIdentifier operator:Operator right:Value { return { left: left, operator: operator, right: right } }
+  = left:DottedIdentifier operator:Operator right:Value { return array( "left" => $left, "operator" => $operator, "right" => "right" ); }
 
 FieldBlock
-  = "{" fields:FieldList "}" { return fields; }
+  = "{" fields:FieldList "}" { return $fields; }
 
 FunctionList
-  = functions:("." Function)* { return extractList(functions, 1); }
+  = functions:("." Function)* { return extractList($functions, 1); }
 
 Function
-  = name:Identifier "(" params:ArgumentList? ")" { return { type: 'Function', name: name, arguments: params }; }
+  = name:"sort" "(" params:SortList? ")" { return array( "type" => 'Function', "name" => $name, "arguments" => $params ); }
+  / name:Identifier "(" params:ArgumentList? ")" { return array( "type" => 'Function', "name" => $name, "arguments" => $params ); }
 
-Locator 
+SortDirection
+  = "-"
+  / "+"
+
+Locator
   = Value
   / Identifier
- 
+
 LocatorList
   = first:Locator rest:(whitespaces? "," whitespaces? Locator)* {
-       return buildList(first, rest, 1);
+       return buildList($first, $rest, 1);
      }
-  
+
+SortList
+  = first:(ColumnIdentifier SortDirection?) whitespaces? rest:("," whitespaces? (ColumnIdentifier SortDirection?))* {
+       return buildList($first, $rest, 2);
+     }
+
 ArgumentList
-  = first:Identifier rest:("," Identifier)* {
-       return buildList(first, rest, 1);
+  = first:Locator rest:(whitespaces? "," Locator whitespaces?)* {
+       return buildList($first, $rest, 3);
      }
 
 FieldList
   = first:(Field) rest:("," whitespaces? Field)* {
-      return buildList(first, rest, 1);
+      return buildList($first, $rest, 2);
     }
 
 SegmentField
@@ -60,26 +72,31 @@ SegmentField
 
 Field
   = name:DottedIdentifier alias:(_ ":as" _ alias:string)? fields:(FieldBlock)? {
-    var result = { name: name }
-    if (alias) {
-      result["alias"] = alias[3];
+    $result = array( "name" => $name );
+    if ($alias) {
+      $result["alias"] = $alias[3];
     }
-    if (fields) {
-      result["fields"] = fields
+    if (!empty($fields)) {
+      $result["fields"] = $fields;
     }
-    return result;
+    return $result;
   }
   / Segment
 
 
 DottedIdentifier
   = prefix:$"-"? start:varstart chars:dottedchar* {
-    return prefix + start + chars.join("");
+    return $prefix . $start . join("", $chars);
   }
 
 Identifier
+  = prefix:$"-"? start:varstart chars:dashedalphanumeric* {
+    return $prefix . $start . join("", $chars);
+  }
+
+ColumnIdentifier
   = prefix:$"-"? start:varstart chars:alphanumeric* {
-    return prefix + start + chars.join("");
+    return $prefix . $start . join("", $chars);
   }
 
 Operator
@@ -92,9 +109,11 @@ varstart
 dottedchar
   = [_a-z0-9-.]i
 
-alphanumeric
+dashedalphanumeric
   = [_a-z0-9-]i
 
+alphanumeric
+  = [_a-z0-9]i
 
 string
   = string1
@@ -102,12 +121,12 @@ string
 
 string1
   = '"' chars:([^\n\r\f\\"] / "\\" nl:nl { return ""; } / escape)* '"' {
-      return chars.join("");
+      return join("", $chars);
     }
 
 string2
   = "'" chars:([^\n\r\f\\'] / "\\" nl:nl { return ""; } / escape)* "'" {
-      return chars.join("");
+      return join("", $chars);
     }
 
 unicode
@@ -120,7 +139,7 @@ escape
   / "\\" ch:[^\r\n\f0-9a-f]i { return ch; }
 
 chars
-  = chars:char+ { return chars.join(""); }
+  = chars:char+ { return join("", $chars); }
 
 char
   // In the original JSON grammar: "any-Unicode-character-except-"-or-\-or-control-character"

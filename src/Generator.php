@@ -3,7 +3,7 @@
 namespace fitch;
 
 class Generator {
-  private $root = null;
+  protected $root = null;
   public function __construct($segment = null, $meta) {
     $this->root = $segment;
     $this->meta = $meta;

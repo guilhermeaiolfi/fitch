@@ -5,6 +5,8 @@ namespace fitch\sql;
 class Query {
   protected $joins = array();
   protected $fields = array();
+  protected $sort_by = array();
+
   public function __construct() {
 
   }
@@ -106,7 +108,19 @@ class Query {
       $sql .= $this->getJoinSql($join, $meta);
     }
 
+    $sort_by = $this->sort_by;
+    $sort_by_count = count($sort_by);
+    if ($sort_by_count > 0) {
+      $sql .= " SORT BY ";
+    }
+    for ($i = 0; $i < count($sort_by); $i++) {
+      $sql .= $i? ", " : "";
+      $sql .= $sort_by[$i]["column"] . " " . ($sort_by[$i]["direction"] == "+"? "ASC" : "DESC");
+    }
     return $sql;
+  }
+  function addSortBy($sort) {
+    $this->sort_by[] = $sort;
   }
 }
 

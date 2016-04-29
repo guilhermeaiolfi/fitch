@@ -1,0 +1,17 @@
+{
+  "name": "fitch-parser",
+  "version": "1.0.0",
+  "description": "fitch parser",
+  "scripts": {
+    "build": ""
+  },
+  "keywords": [
+    "parser"
+  ],
+
+  "author": "Guilherme R. Aiolfi",
+  "license": "MIT",
+  "dependencies": {
+    "php-pegjs": ""
+  }
+}

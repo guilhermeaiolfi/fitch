@@ -55,6 +55,10 @@ class SqlGenerator extends Generator {
         }
       }
     }
+    $function = $root->getFunction("sort");
+    for($i = 0; $i < count($function); $i++) {
+      $query->addSortBy($function[$i]);
+    }
 
     return $queries;
   }
