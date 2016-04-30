@@ -48,12 +48,14 @@ class ArrayHydration {
         $pointer[$alias]["_name"] = $alias;
         $pointer[$alias]["_leaf"] = true;
         $pointer[$alias]["_type"] = "field";
+        //echo $field->getRelationName();exit;
         $pointer[$alias]["_many"] = $meta->isManyToManyRelation($field->getRelationName());
         $pointer[$alias]["_column_index"] = $i;
 
       }
       $i++;
     }
+    //print_r($mapping);exit;
     return $mapping;
   }
   public function getResult($rows) {

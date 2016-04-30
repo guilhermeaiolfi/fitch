@@ -19,7 +19,7 @@ start
   / FieldBlock
 
 Segment
-  = segment:"/" segment:Identifier ids:("[" LocatorList "]")? functions:FunctionList? whitespaces? fields:FieldBlock? conditions:ConditionList? { return { name: segment, type: 'Segment', ids: ids? ids[1] : null, functions: functions, fields: fields, conditions: conditions }; }
+  = segment:"/" segment:DottedIdentifier ids:("[" LocatorList "]")? functions:FunctionList? whitespaces? fields:FieldBlock? conditions:ConditionList? { return { name: segment, type: 'Segment', ids: ids? ids[1] : null, functions: functions, fields: fields, conditions: conditions }; }
 
 ConditionList
   = "?" first:Condition rest:("&" Condition)* { return buildList(first, rest, 1); }

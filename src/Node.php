@@ -4,6 +4,7 @@ namespace fitch;
 
 use \fitch\fields\Field as Field;
 use \fitch\fields\Relation as Relation;
+use \fitch\fields\SoftRelation as SoftRelation;
 use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class Node {
@@ -89,12 +90,22 @@ class Node {
     if (isset($data["fields"]) && is_array($data["fields"])) {
       foreach ($data["fields"] as $field) {
         $obj = null;
+        $relation = $this;
         if (empty($field["fields"])) {
           $obj = new Field($field);
+          if ($obj->hasDot()) {
+            $relation = new SoftRelation();
+            $relation->setGenerated(true);
+            $relation->setParent($this);
+            $parts = $obj->getParts();
+            $n = count($parts);
+            $relation->setName($parts[$n - 2]);
+          }
+
         } else {
           $obj = new Relation($field);
         }
-        $obj->setParent($this);
+        $obj->setParent($relation);
         $this->addChild($obj);
       }
     }

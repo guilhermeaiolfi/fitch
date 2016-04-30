@@ -8,28 +8,43 @@ class Join {
   public $name = null;
   public $relation = null;
   public $conditions = "";
+  public $type = "LEFT";
   public function setTable($table) {
     $this->table = $table;
+  }
+
+  public function getType() {
+    return $this->type;
+  }
+
+  public function setType($type) {
+    $this->type = $type;
   }
 
   public function getTable() {
     return $this->table;
   }
+
   public function setAlias($alias) {
     $this->alias = $alias;
   }
+
   public function getAlias() {
     return $this->alias;
   }
+
   public function setName($name) {
     $this->name = $name;
   }
+
   public function getName() {
     return $this->name;
   }
+
   public function setRelation($relation) {
     $this->relation = $relation;
   }
+
   public function getRelation() {
     return $this->relation;
   }
@@ -37,6 +52,7 @@ class Join {
   public function getConditions() {
     return $this->conditions;
   }
+
   public function setConditions() {
     return $this->conditions;
   }

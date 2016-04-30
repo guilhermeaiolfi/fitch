@@ -6,20 +6,34 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
 {
 
   protected $meta = array(
+    "schools" => array(
+      "fields" => array("id", "name")
+    ),
+    "users" => array(
+      "fields" => array("id", "name")
+    ),
     "schools.director" => array(
-      "school.director_id" => "users.id"
+      "foreign_keys" => array(
+        "school.director_id" => "users.id"
+      )
     ),
     "schools.departments" => array(
-      "schools.id" => "school_department.school_id",
-      "school_department.department_id" => "departments.id"
+      "foreign_keys" => array(
+        "schools.id" => "school_department.school_id",
+        "school_department.department_id" => "departments.id"
+        )
     ),
     "schools.programs" => array(
-      "schools.id" => "school_program.school_id",
-      "school_program.program_id" => "programs.id"
+      "foreign_keys" => array(
+        "schools.id" => "school_program.school_id",
+        "school_program.program_id" => "programs.id"
+      )
     ),
     "departaments.courses" => array(
-      "departaments.id" => "departament_course.departament_id",
-      "departament_course.course_id" => "courses.id"
+      "foreign_keys" => array(
+        "departaments.id" => "departament_course.departament_id",
+        "departament_course.course_id" => "courses.id"
+      )
     )
   );
 

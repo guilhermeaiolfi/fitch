@@ -2,16 +2,23 @@
 
 namespace fitch\sql;
 
+use \fitch\Fields\Field as Field;
+use \fitch\Fields\Segment as Segment;
+
 class Query {
   protected $joins = array();
   protected $fields = array();
   protected $sort_by = array();
+  protected $aliases = array();
 
   public function __construct() {
 
   }
   public function getRoot() {
     return $this->root;
+  }
+  public function setRoot($root) {
+    return $this->root = $root;
   }
   public function addJoin($join) {
     $this->joins[] = $join;
@@ -22,19 +29,6 @@ class Query {
   public function setFields($fields) {
     $this->fields = $fields;
   }
-
-  public function setTable($table) {
-    $this->table = $table;
-  }
-  public function getTable() {
-    return $this->table;
-  }
-  public function getAlias() {
-    return $this->alias? $this->alias : $this->getTable();
-  }
-  public function setAlias($alias) {
-    $this->alias = $alias;
-  }
   public function getFields() {
     return $this->fields;
   }
@@ -42,6 +36,13 @@ class Query {
     return $this->joins;
   }
 
+  public function getTable() {
+    $parts = $this->getRoot()->getParts();
+    if ($this->getRoot()->hasDot()) {
+      return $parts[0];
+    }
+    return $this->getRoot()->getName();
+  }
   public function getJoinSql($join, $meta) {
     $meta = $meta->getRelationConnections($join->getName());
     if (count($meta) == 2) {
@@ -58,13 +59,13 @@ class Query {
       list($left_table, $left_field) = explode(".", $left);
       list($right_table, $right_field) = explode(".", $right);
 
+      $aliases = $this->getAliasFor($join);
       if ($first) {
-        $first_alias = $this->getTable() . "_" . $join->getTable();
-        $joins[] = " LEFT JOIN $right_table " . $first_alias . " ON (" . $first_alias . "." . $right_field . " = " . $this->getAlias() . "." . $left_field . ")";
+        $joins[] = " " . $join->getType() . " JOIN $right_table " . $aliases[0] . " ON (" . $aliases[0] . "." . $right_field . " = " . $this->getAliasFor($this->getRoot()) . "." . $left_field . ")";
         $first = false;
       } else {
-        $alias = $join->getTable();
-        $joins[] = " LEFT JOIN $right_table " . $alias . " ON (" . $alias . "." . $right_field . " = " . $first_alias . "." . $left_field . ")";
+        $alias = $this->getAliasFor($join);
+        $joins[] = " " . $join->getType() . " JOIN $right_table " . $aliases[1] . " ON (" . $aliases[1] . "." . $right_field . " = " . $aliases[0] . "." . $left_field . ")";
       }
 
     }
@@ -80,29 +81,29 @@ class Query {
     list($right_table, $right_field) = explode(".", $left);
 
     $table = $left_table;
-    $alias = explode(".", $join->getName())[1];
+    $aliases = $this->getAliasFor($join);
 
-
-    return " LEFT JOIN $left_table $alias ON (" . $this->getAlias() . "." . $right_field . " = " . $join->getAlias() . "." . $left_field . ")";
+    return " " . $join->getType() . " JOIN $left_table " . $aliases[1] . " ON (" . $this->getAliasFor($this->getRoot()) . "." . $right_field . " = " . $aliases[1] . "." . $left_field . ")";
   }
 
   public function getSql($meta) {
     $sql = "SELECT ";
 
+    $alias = $this->getAliasFor($this->getRoot());
+
     $fields = array_map(function($value) {
+      //print_r($value);
       if (!$value->hasDot()) {
-        return $value->getParent()->getAliasOrName() . "." . $value->getName() . ($value->getAlias()? (" AS " . $value->getAlias()) : "");
+        $alias = $this->getAliasFor($value);
+        return  $alias . "." . $value->getName();
       } else {
         $parts = $value->getParts();
         $n = count($parts);
-        return $parts[$n-2] . "." . $parts[$n-1] . ($value->getAlias()? (" AS " . $value->getAlias()) : "");
+        return $this->getAliasFor($value) . "." . $parts[$n-1];
       }
     }, $this->getFields());
 
-    $sql .= (empty($fields)? "*" : implode(", ", $fields)) . " FROM " . $this->getTable();
-    if ($this->getAlias()) {
-      $sql .= " AS " . $this->getAlias();
-    }
+    $sql .= (empty($fields)? "*" : implode(", ", $fields)) . " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
 
     foreach ($this->getJoins() as $join) {
       $sql .= $this->getJoinSql($join, $meta);
@@ -121,6 +122,60 @@ class Query {
   }
   function addSortBy($sort) {
     $this->sort_by[] = $sort;
+  }
+  function getAliasFor($node) {
+    $table = "";
+
+    if ($node instanceof Segment) {
+      if ($node->hasDot()) {
+        $parts = $node->getParts();
+        $table = $parts[0];
+      } else {
+        $table = $node->getName();
+      }
+    } else if ($node instanceof Field) {
+      $parent = $node->getParent();
+      if ($node->hasDot()) {
+        $parent = $node;
+      }
+      if ($parent->hasDot()) {
+        $parts = $parent->getParts();
+        if ($parent instanceof Segment) {
+          $table = $parts[count($parts) - 1];
+        } else {
+          $table = $parts[count($parts) - 2];
+        }
+      } else {
+        $table = $parent->getName();
+      }
+      $node = $node->getParent();
+    } else if ($node instanceof \fitch\Join) {
+
+      $relation = $node->getRelation();
+      $table = ($relation->getParent()? $relation->getParent()->getName() : $relation->getName()) . "_" . $node->getTable();
+      $aliases = array();
+      $aliases[] = $this->registerAliasFor($table, $relation);
+
+      $table = $node->getTable();
+
+      $aliases[] = $this->registerAliasFor($table, $relation);
+      return $aliases;
+    } else {
+      $table = $node->getTable();
+    }
+    return $this->registerAliasFor($table, $node);
+
+  }
+  public function registerAliasFor($table, $node) {
+    $n = 0;
+    while (isset($this->aliases[$table . "_" . $n])) {
+      if ($this->aliases[$table . "_" . $n] == $node) {
+        return $table . "_" . $n;
+      }
+      $n++;
+    }
+    $this->aliases[$table . "_" . $n] = $node;
+    return $table . "_" . $n;
   }
 }
 

@@ -12,6 +12,20 @@ class Segment extends Relation {
   public function getFunction($name) {
     return $this->functions[$name];
   }
+  public function getJoins() {
+    // TODO: support multi level JOINs: school.department.another_table
+    $joins = array();
+    if ($this->hasDot()) {
+      $parts = $this->getParts();
+      $join = new \fitch\Join();
+      $join->setName($this->getName());
+      $join->setRelation($this);
+      $join->setType("INNER");
+      $join->setTable($parts[count($parts) - 1]);
+      $joins[] = $join;
+    }
+    return $joins;
+  }
   public function __construct ($data = null) {
     parent::__construct($data);
     for($i = 0; $i < count($data["functions"]); $i++) {

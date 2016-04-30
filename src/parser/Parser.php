@@ -366,7 +366,7 @@ class Parser{
         if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c2); }
       }
       if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_parseIdentifier();
+        $s2 = $this->peg_parseDottedIdentifier();
         if ($s2 !== $this->peg_FAILED) {
           $s3 = $this->peg_currPos;
           if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c4) {

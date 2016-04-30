@@ -5,6 +5,7 @@ namespace fitch\sql;
 use \fitch\Generator as Generator;
 use \fitch\fields\Field as Field;
 use \fitch\fields\Relation as Relation;
+use \fitch\fields\Segment as Segment;
 use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class SqlGenerator extends Generator {
@@ -23,16 +24,23 @@ class SqlGenerator extends Generator {
 
     $queries[] = $query = new Query();
 
-    $query->setTable($root->getName());
-
-    $query->setAlias($root->getAlias());
-
     $joins = array();
 
-    $query->addField($this->createHashField($root));
+    //$fields[] = array();
+    $fields[] = $root;
 
-    foreach ($root->getListOf("\\fitch\\fields\\Field") as $field) {
-      if ($field instanceof Relation) {
+    $fields = array_merge($fields, $root->getListOf("\\fitch\\fields\\Field"));
+
+    foreach ($fields as $field) {
+      if ($field instanceof Segment) {
+        $query->setRoot($field);
+        foreach ($field->getJoins() as $join) {
+          $query->addJoin($join);
+        }
+
+        $query->addField($this->createHashField($field));
+
+      } else if ($field instanceof Relation) {
         foreach ($field->getJoins() as $join) {
           $query->addJoin($join);
         }
@@ -41,16 +49,12 @@ class SqlGenerator extends Generator {
         if (!$field->hasDot()) {
           $query->addField($field);
         } else {
-          $relation = new Relation();
-          $relation->setGenerated(true);
-          $relation->setParent($field->getParent());
-          $parts = $field->getParts();
-          $n = count($parts);
-          $relation->setName($parts[$n - 2]);
+          $relation = $field->getParent();
           foreach ($relation->getJoins() as $join) {
             $query->addJoin($join);
           }
           $query->addField($this->createHashField($relation));
+          //$field->setParent($relation);
           $query->addField($field);
         }
       }

@@ -13,7 +13,8 @@ class Relation extends \fitch\fields\Field {
       $obj->setRelation($this);
       $obj->setTable($parts[$i]);
       if ($i == 0) {
-        $obj->setName($this->getParent()->getName() . "." . $parts[0]);
+        $name = $this->getParent()? $this->getParent()->getName() . "." . $parts[0] : $parts[0];
+        $obj->setName($name);
         $joins[] = $obj;
       } else {
         $obj->setName($parts[$i - 1] . "." . $parts[$i]);

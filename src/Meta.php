@@ -10,7 +10,7 @@ class Meta {
     return array("id");
   }
   public function getRelationConnections($relation_name){
-    return $this->meta[$relation_name];
+    return $this->meta[$relation_name]["foreign_keys"];
   }
   public function getTableNameFromRelation($relation_name) {
     $connections = $this->getRelationConnections($relation_name);
@@ -21,7 +21,7 @@ class Meta {
     return explode(".", $last)[0];
   }
   public function isManyToManyRelation($relation_name) {
-    return count($this->meta[$relation_name]) == 2;
+    return count($this->getRelationConnections($relation_name)) == 2;
   }
 }
 ?>

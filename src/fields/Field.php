@@ -15,7 +15,7 @@ class Field extends Node {
   public function setGenerated($b) {
     $this->generated = $b;
   }
-  public function getGenerated() {
+  public function isGenerated() {
     return $this->generated;
   }
   public function getFullname() {
@@ -49,6 +49,7 @@ class Field extends Node {
       $parts = $this->getParts();
       $n = count($parts);
       $parent = $this->getParent();
+      while ($parent instanceof \fitch\fields\SoftRelation) { $parent = $parent->getParent(); }
       if ($n == 2) {
         return $parent->getName() . "." . $parts[0];
       } else {
