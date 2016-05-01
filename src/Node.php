@@ -90,22 +90,23 @@ class Node {
     if (isset($data["fields"]) && is_array($data["fields"])) {
       foreach ($data["fields"] as $field) {
         $obj = null;
-        $relation = $this;
         if (empty($field["fields"])) {
-          $obj = new Field($field);
-          if ($obj->hasDot()) {
-            $relation = new SoftRelation();
-            $relation->setGenerated(true);
-            $relation->setParent($this);
-            $parts = $obj->getParts();
+          if (strpos($field["name"], ".") !== false) {
+            $parts = explode(".", $field["name"]);
+            $child = $field;
             $n = count($parts);
-            $relation->setName($parts[$n - 2]);
+            $child["name"]= $parts[$n - 1];
+            $field["fields"] = array($child);
+            unset($parts[$n - 1]);
+            $field["name"] = join(".", $parts);
+            $obj = new SoftRelation($field);
+          } else {
+            $obj = new Field($field);
           }
-
         } else {
           $obj = new Relation($field);
         }
-        $obj->setParent($relation);
+        $obj->setParent($this);
         $this->addChild($obj);
       }
     }

@@ -22,6 +22,15 @@ class Relation extends \fitch\fields\Field {
     }
     return $joins;
   }
+  public function hasPrimaryKey() {
+    $children = $this->getChildren();
+    foreach ($children as $child) {
+      if ($child->getName() == "id") {
+        return $child;
+      }
+    }
+    return NULL;
+  }
 }
 
 ?>

@@ -91,19 +91,26 @@ class Query {
 
     $alias = $this->getAliasFor($this->getRoot());
 
-    $fields = array_map(function($value) {
-      //print_r($value);
-      if (!$value->hasDot()) {
-        $alias = $this->getAliasFor($value);
-        return  $alias . "." . $value->getName();
-      } else {
-        $parts = $value->getParts();
-        $n = count($parts);
-        return $this->getAliasFor($value) . "." . $parts[$n-1];
+    $fields = $this->getFields();
+    $select_fields = array();
+    for ($i = 0; $i < count($fields); $i++) {
+      $field = $fields[$i];
+      if ($field instanceof \fitch\fields\PrimaryKeyHash) {
+        if ($field->getField()) {
+          continue;
+        }
       }
-    }, $this->getFields());
+      if (!$field->hasDot()) {
+        $alias = $this->getAliasFor($field);
+        $select_fields[] = $alias . "." . $field->getName();
+      } else {
+        $parts = $field->getParts();
+        $n = count($parts);
+        $select_fields[] = $this->getAliasFor($field) . "." . $parts[$n-1];
+      }
+    }
 
-    $sql .= (empty($fields)? "*" : implode(", ", $fields)) . " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
+    $sql .= (empty($fields)? "*" : implode(", ", $select_fields)) . " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
 
     foreach ($this->getJoins() as $join) {
       $sql .= $this->getJoinSql($join, $meta);

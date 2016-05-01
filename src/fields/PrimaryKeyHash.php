@@ -7,12 +7,21 @@ use \fitch\fields\Relation as Relation;
 class PrimaryKeyHash extends Field {
 
   protected $primary_key = array();
+  protected $field = NULL;
 
   public function setPrimaryKey($keys) {
     $this->primary_key = $keys;
   }
   public function getPrimaryKey($keys) {
     return $this->primary_key;
+  }
+
+  public function setField($field) {
+    return $this->field = $field;
+  }
+
+  public function getField() {
+    return $this->field;
   }
 
   public function getName() {

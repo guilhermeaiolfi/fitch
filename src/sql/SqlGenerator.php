@@ -15,6 +15,13 @@ class SqlGenerator extends Generator {
     $primary_key_field->setPrimaryKey(array("id"));
     $keys = $this->meta->getPrimaryKey($this->meta->getTableNameFromRelation($relation->getRelationName()));
     $primary_key_field->setParent($relation);
+    $fields = $relation->getListOf("\\fitch\\fields\\Field");
+    foreach ($fields as $field) {
+      if ($field->getName() == "id") {
+        $primary_key_field->setField($field);
+        break;
+      }
+    }
     return $primary_key_field;
   }
   public function getQueries() {

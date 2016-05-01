@@ -1,18 +1,23 @@
 {
-  function extractList($list, $index) {
-    //print_r($list);
-    $len = count($list);
-    $result = array();
+  if (!function_exists('\fitch\parser\extractList')) {
+    function extractList($list, $index) {
+      $len = count($list);
+      $result = array();
 
-    for ($i = 0; $i < $len; $i++) {
-      $result[$i] = $list[$i][$index];
+      for ($i = 0; $i < $len; $i++) {
+        $result[$i] = $list[$i][$index];
+      }
+
+      return $result;
     }
-
-    return $result;
   }
 
-  function buildList($first, $rest, $index) {
-    return array_merge(array($first),extractList($rest, $index));
+
+
+  if (!function_exists('\fitch\parser\buildList')) {
+    function buildList($first, $rest, $index) {
+      return array_merge(array($first),extractList($rest, $index));
+    }
   }
 }
 

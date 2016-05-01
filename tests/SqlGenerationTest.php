@@ -56,8 +56,8 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
-          "1" => array("name" => "School #1", "department_name" => array("1" => "Department #1", "2" => "Department #2")),
-          "2" => array("name" => "School #2", "department_name" => array("1" => "Department #1"))
+          0 => array("name" => "School #1", "department_name" => array(0 => "Department #1", 1 => "Department #2")),
+          1 => array("name" => "School #2", "department_name" => array(0 => "Department #1"))
         )
       )
     );
@@ -77,8 +77,8 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
-          "1" => array("name" => "School #1", "departments.name" => array("1" => "Department #1", "2" => "Department #2")),
-          "2" => array("name" => "School #2", "departments.name" => array("1" => "Department #1"))
+          0 => array("name" => "School #1", "departments.name" => array(0 => "Department #1", 1 => "Department #2")),
+          1 => array("name" => "School #2", "departments.name" => array(0 => "Department #1"))
         )
       )
     );
@@ -105,13 +105,13 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
-          "1" => array("alias_name" => "School #1", "departments" => array(
-              "1" => array("name" => "Department #1"),
-              "2" => array("name" => "Department #2")
+          0 => array("alias_name" => "School #1", "departments" => array(
+              0 => array("name" => "Department #1"),
+              1 => array("name" => "Department #2")
             )
           ),
-          "2" => array("alias_name" => "School #2", "departments" => array(
-              "1" => array("name" => "Department #1")
+          1 => array("alias_name" => "School #2", "departments" => array(
+              0 => array("name" => "Department #1")
             )
           )
         )
@@ -139,13 +139,13 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
-          "1" => array("name" => "School #1", "departments" => array(
-              "1" => array("name" => "Department #1"),
-              "2" => array("name" => "Department #2")
+          0 => array("name" => "School #1", "departments" => array(
+              0 => array("name" => "Department #1"),
+              1 => array("name" => "Department #2")
             )
           ),
-          "2" => array("name" => "School #2", "departments" => array(
-              "1" => array("name" => "Department #1")
+          1 => array("name" => "School #2", "departments" => array(
+              0 => array("name" => "Department #1")
             )
           )
         )
@@ -175,6 +175,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
 
       $nested = $populator->getResult($rows);
+      //print_r($nested);exit;
       $this->assertEquals($test["result"], $nested);
     }
   }

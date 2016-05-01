@@ -58,15 +58,25 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
 
 
+    // $rows = array (
+    //   array(1, "School #1", 1),
+    //   array(2, "School #2", 1),
+    //   array(1, "School #1", 2)
+    // );
+
     $rows = array (
-      array(1, 1, "School #1", 1, 1),
-      array(2, 2, "School #2", 1, 1),
-      array(1, 1, "School #1", 2, 2)
+      array("School #1", 1, 1),
+      array("School #2", 2, 1),
+      array("School #1", 1, 2)
     );
 
-    $ql = "/schools{id, name, departments.id}";
+    //$ql = "/schools{name, id, departments{id}}";
+    //$ql = "/schools{id, name, departments.id";
+    $ql = "/schools{name, id, departments.id}";
+
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($segment);
+    //print_r($segment);exit;
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
@@ -78,8 +88,44 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $result = array (
       "schools" => array (
-        1 => array("id" => 1, "name" => "School #1", "departments.id" => array (1 => 1, 2 => 2)),
-        2 => array("id" => 2, "name" => "School #2", "departments.id" => array (1 => 1))
+        0 => array("name" => "School #1", "id" => 1, "departments.id" => array (0 => 1, 1 => 2)),
+        1 => array("name" => "School #2", "id" => 2, "departments.id" => array (0 => 1))
+      )
+    );
+
+    $this->assertEquals($result, $nested);
+  }
+
+  public function testNestedRelation()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $rows = array (
+      array("School #1", 1, 1),
+      array("School #2", 2, 1),
+      array("School #1", 1, 2)
+    );
+
+    $ql = "/schools{name, id, departments{id}}";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($segment);
+    //print_r($segment);exit;
+    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+
+    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+
+    $nested = $populator->getResult($rows);
+
+    $result = array (
+      "schools" => array (
+        0 => array("name" => "School #1", "id" => 1, "departments" => array (0 => array ("id" => 1), 1 => array("id" => 2))),
+        1 => array("name" => "School #2", "id" => 2, "departments" => array (0 => array("id" => 1)))
       )
     );
     $this->assertEquals($result, $nested);
