@@ -63,6 +63,19 @@ class Field extends Node {
     return null;
   }
 
+  public function getLevel() {
+    $level = -1;
+    $parent = $this->getParent();
+    while ($parent) {
+      if ($parent instanceof \fitch\fields\SoftRelation) {
+      } else if ($parent instanceof \fitch\fields\Relation) {
+        $level++;
+      }
+      $parent = $parent->getParent();
+    }
+    return $level;
+  }
+
   public function getListOf($type) {
     $pending = array();
     $current = $this;

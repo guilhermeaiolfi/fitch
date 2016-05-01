@@ -81,6 +81,7 @@ class ArrayHydration {
         $pointer[$alias]["_name"] = $alias;
         $pointer[$alias]["_leaf"] = true;
         $pointer[$alias]["_type"] = "field";
+        $pointer[$alias]["_level"] = $field->getLevel();
         $pointer[$alias]["_many"] = $meta->isManyToManyRelation($field->getRelationName());
         $pointer[$alias]["_column_index"] = $i;
 
@@ -99,63 +100,101 @@ class ArrayHydration {
     return $result;
   }
 
-  public function getLineFor($relation, $id){
-    return is_array($this->line[$relation])? $this->line[$relation][$id] : NULL;
-  }
+  public function getLineFor($ids){
+    $last = $this->line;
+    $last_id = NULL;
+    foreach ($ids as $item) {
+      $name = key($item);
+      $id = $item[$name];
 
-  public function setLineFor($relation, $id, $line) {
-    if (!is_array($this->line[$relation])) {
-      $this->line[$relation] = array();
+      $last = $last[$name];
+      $last_id = $id;
     }
-    $this->line[$relation][$id] = $line;
+    $line = is_array($last) && is_array($last[$last_id])? $last[$last_id]["_value"] : NULL;
+    return $line;
   }
 
+  public function setLineFor($ids, $line) {
+    $last = &$this->line;
+    $last_id = NULL;
+    foreach ($ids as $item) {
+      $name = key($item);
+      $id = $item[$name];
+      if (!is_array($last[$name])) {
+        $last[$name] = array();
+      }
+      if (!is_array($last[$name][$id])) {
+        $last[$name][$id] = array();
+      }
+      $last = &$last[$name][$id];
+      $last_id = $id;
+    }
+
+    $last["_value"] = $line;
+  }
+
+  public function setFieldValue (&$level, $row, $field) {
+    $relation = $level["_relation"];
+    $id = $row[$relation["_id"]["_column_index"]];
+    $name = $field["_name"];
+
+    $arr = &$level["_pointer"];
+    if ($field["_many"]) {
+      if (!is_array($arr[$name])) {
+        $arr[$name] = array();
+      }
+
+      $arr[$name][] = $row[$field["_column_index"]];
+      $line = count($arr[$name]);
+      //$this->setLineFor($name, $id, $line);
+    } else {
+      $arr[$name] = $row[$field["_column_index"]];
+    }
+
+  }
   public function populateRow(&$result, $row, $mapping) {
     $pending = $mapping;
+    //print_r($mapping);exit;
     $arr = &$result;
+    $level = array();
+
+    $ids = array();
 
     while ($node = array_shift($pending)) {
       $column_index = $node["_column_index"];
       $name = $node["_name"];
 
       if ($node["_type"] == "relation") {
-        if (!is_array($arr[$name])) {
-          $arr[$name] = array();
-        }
-        $arr = &$arr[$name];
         if (is_array($node['_children'])) {
           foreach ($node['_children'] as $child) {
             $pending[] = $child;
           }
         }
+        if (!is_array($arr[$name])) {
+          $arr[$name] = array();
+        }
+
         $id = $row[$node["_id"]["_column_index"]];
 
-        $line = $this->getLineFor($name, $id);
+        $ids[] = array($name => $id);
+
+        $line = $this->getLineFor($ids);
         if ($line === NULL) {
-          $arr[] = array();
-          $line = count($arr) - 1;
-          $this->setLineFor($name, $id, $line);
+          $arr[$name][] = array();
+          $line = count($arr[$name]) - 1;
+          $this->setLineFor($ids, $line);
         }
-        $arr = &$arr[$line];
+
+        $arr = &$arr[$name][$line];
+
+        $level[] = array("_pointer" => &$arr, "_relation" => $node);
+
       } elseif ($node["_type"] == "field") {
-        if ($node["_many"]) {
-          if (!is_array($arr[$name])) {
-            $arr[$name] = array();
-          }
-          $id = $row[$node["_id"]["_column_index"]];
-          $line = $this->getLineFor($name, $id);
-          if ($line === NULL) {
-            $line = count($arr[$name]);
-            $this->setLineFor($name, $id, $line);
-          }
-          $arr[$name][$line] = $row[$node["_column_index"]];
-        } else {
-          //echo $name;
-          $arr[$name] = $row[$node["_column_index"]];
-        }
+        $this->setFieldValue($level[$node["_level"]], $row, $node);
       } elseif ($node["_type"] == "primary_key") {
       }
     }
+    //print_r($result);
   }
 }
 
