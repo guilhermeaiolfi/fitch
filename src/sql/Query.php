@@ -99,14 +99,8 @@ class Query {
     $select_fields = array();
     for ($i = 0; $i < count($fields); $i++) {
       $field = $fields[$i];
-      if (!$field->hasDot()) {
-        $alias = $this->getAliasFor($field);
-        $select_fields[] = $alias . "." . $field->getName();
-      } else {
-        $parts = $field->getParts();
-        $n = count($parts);
-        $select_fields[] = $this->getAliasFor($field) . "." . $parts[$n-1];
-      }
+      $alias = $this->getAliasFor($field);
+      $select_fields[] = $alias . "." . $field->getName();
     }
 
     $sql .= implode(", ", $select_fields);
