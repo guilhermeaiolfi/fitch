@@ -40,29 +40,48 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     )
   );
 
+  /*public function testNoFields()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $rows = array (
+      array(1, "School #1"),
+      array(2, "School #2"),
+    );
+
+    $ql = "/schools";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($segment);
+
+    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+
+    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+
+    $nested = $populator->getResult($rows);
+    print_r($nested);exit;
+
+    $result = array (
+      "schools" => array (
+        0 => array("name" => "School #1", "id" => 1, "departments.id" => array (0 => 1, 1 => 2)),
+        1 => array("name" => "School #2", "id" => 2, "departments.id" => array (0 => 1))
+      )
+    );
+
+    $this->assertEquals($result, $nested);
+  }*/
+
   public function testSimpleJoin()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
 
     $parser = new Parser();
-    // $ql = "/schools.director";
-    // $segment = $parser->parse($ql);
-    // $segment = new \fitch\fields\Segment($segment);
-    // $generator = new \fitch\sql\SqlGenerator($segment, $meta);
-    // $queries = $generator->getQueries();
-    // $sql = $queries[0]->getSql($meta);
-
-
-    // $this->assertEquals("SELECT director_0.id FROM schools AS schools_0 INNER JOIN users director_0 ON (schools_0.director_id = director_0.id)", $sql);
-
-
-
-    // $rows = array (
-    //   array(1, "School #1", 1),
-    //   array(2, "School #2", 1),
-    //   array(1, "School #1", 2)
-    // );
 
     $rows = array (
       array("School #1", 1, 1),
@@ -70,8 +89,6 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
       array("School #1", 1, 2)
     );
 
-    //$ql = "/schools{name, id, departments{id}}";
-    //$ql = "/schools{id, name, departments.id";
     $ql = "/schools{name, id, departments.id}";
 
     $segment = $parser->parse($ql);

@@ -23,5 +23,9 @@ class Meta {
   public function isManyToManyRelation($relation_name) {
     return count($this->getRelationConnections($relation_name)) == 2;
   }
+
+  public function getFields($relation_name) {
+    return $this->meta[$relation_name]["fields"];
+  }
 }
 ?>

@@ -33,12 +33,13 @@ class SqlGenerator extends Generator {
 
     $joins = array();
 
-    //$fields[] = array();
+    $meta = $this->getMeta();
+
     $fields[] = $root;
 
-    $fields = array_merge($fields, $root->getListOf("\\fitch\\fields\\Field"));
+    //$user_fields = $root->getListOf("\\fitch\\fields\\Field");
 
-    foreach ($fields as $field) {
+    while ($field = array_shift($fields)) {
       if ($field instanceof Segment) {
         $query->setRoot($field);
         foreach ($field->getJoins() as $join) {
@@ -47,11 +48,22 @@ class SqlGenerator extends Generator {
 
         $query->addField($this->createHashField($field));
 
+        $children = $field->getChildren();
+
+        foreach ($children as $child) {
+          $fields[] = $child;
+        }
       } else if ($field instanceof Relation) {
         foreach ($field->getJoins() as $join) {
           $query->addJoin($join);
         }
         $query->addField($this->createHashField($field));
+
+        $children = $field->getChildren();
+
+        foreach ($children as $child) {
+          $fields[] = $child;
+        }
       } else {
         if (!$field->hasDot()) {
           $query->addField($field);

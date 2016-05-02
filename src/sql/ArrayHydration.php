@@ -135,7 +135,6 @@ class ArrayHydration {
 
   public function setFieldValue (&$level, $row, $field) {
     $relation = $level["_relation"];
-    $id = $row[$relation["_id"]["_column_index"]];
     $name = $field["_name"];
 
     $arr = &$level["_pointer"];
@@ -143,18 +142,14 @@ class ArrayHydration {
       if (!is_array($arr[$name])) {
         $arr[$name] = array();
       }
-
       $arr[$name][] = $row[$field["_column_index"]];
-      $line = count($arr[$name]);
-      //$this->setLineFor($name, $id, $line);
     } else {
       $arr[$name] = $row[$field["_column_index"]];
     }
-
   }
+
   public function populateRow(&$result, $row, $mapping) {
     $pending = $mapping;
-    //print_r($mapping);exit;
     $arr = &$result;
     $level = array();
 
@@ -194,7 +189,6 @@ class ArrayHydration {
       } elseif ($node["_type"] == "primary_key") {
       }
     }
-    //print_r($result);
   }
 }
 

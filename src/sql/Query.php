@@ -11,27 +11,30 @@ class Query {
   protected $sort_by = array();
   protected $aliases = array();
 
-  public function __construct() {
-
-  }
   public function getRoot() {
     return $this->root;
   }
+
   public function setRoot($root) {
     return $this->root = $root;
   }
+
   public function addJoin($join) {
     $this->joins[] = $join;
   }
+
   public function addField($field) {
     $this->fields[] = $field;
   }
+
   public function setFields($fields) {
     $this->fields = $fields;
   }
+
   public function getFields() {
     return $this->fields;
   }
+
   public function getJoins() {
     return $this->joins;
   }
@@ -43,6 +46,7 @@ class Query {
     }
     return $this->getRoot()->getName();
   }
+
   public function getJoinSql($join, $meta) {
     $meta = $meta->getRelationConnections($join->getName());
     if (count($meta) == 2) {
@@ -69,9 +73,7 @@ class Query {
       }
 
     }
-
     return implode(" ", $joins);
-
   }
 
   public function getOneToManyJoin($join, $meta) {
@@ -127,9 +129,11 @@ class Query {
     }
     return $sql;
   }
+
   function addSortBy($sort) {
     $this->sort_by[] = $sort;
   }
+
   function getAliasFor($node) {
     $table = "";
 
@@ -171,8 +175,8 @@ class Query {
       $table = $node->getTable();
     }
     return $this->registerAliasFor($table, $node);
-
   }
+
   public function registerAliasFor($table, $node) {
     $n = 0;
     while (isset($this->aliases[$table . "_" . $n])) {
