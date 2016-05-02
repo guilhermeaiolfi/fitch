@@ -37,6 +37,40 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
     )
   );
 
+  public function testLimitFunction()
+  {
+    $parser = new \fitch\parser\Parser();
+    $result = $parser->parse("/school.limit(10,20)");
+
+    $expected = array (
+      "name" => "school",
+      "type" => "Segment",
+      "ids" => NULL,
+      "functions" =>  array (
+        array (
+          "type" => "Function",
+          "name" => "limit",
+          "params" => array (
+            10,
+            20
+          )
+        )
+      ),
+      "fields" => NULL,
+      "conditions" => NULL
+    );
+
+    $meta = new Meta($this->meta);
+
+    $segment = new \fitch\fields\Segment($meta, $expected);
+    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+
+    $this->assertEquals($result, $expected);
+    $this->assertEquals($sql, "SELECT school_0.id FROM school AS school_0 LIMIT 10,20");
+  }
+
   public function testSortFunction()
   {
     $parser = new \fitch\parser\Parser();
@@ -50,7 +84,7 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
         array (
           "type" => "Function",
           "name" => "sort",
-          "arguments" => array (
+          "params" => array (
             array ("id", "+"),
             array ("name", "-")
           )
@@ -62,13 +96,13 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
 
     $meta = new Meta($this->meta);
 
-    $segment = new \fitch\fields\Segment($expected);
+    $segment = new \fitch\fields\Segment($meta, $expected);
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
     $this->assertEquals($result, $expected);
-    $this->assertEquals($sql, "SELECT school.id AS school_id FROM school AS school SORT BY id ASC, name DESC");
+    $this->assertEquals($sql, "SELECT school_0.id FROM school AS school_0 SORT BY id ASC, name DESC");
   }
 
 }

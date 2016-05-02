@@ -68,6 +68,9 @@ class SqlGenerator extends Generator {
     for($i = 0; $i < count($function); $i++) {
       $query->addSortBy($function[$i]);
     }
+    if ($function = $root->getFunction("limit")) {
+      $query->limit($function["limit"], $function["offset"]);
+    }
 
     return $queries;
   }

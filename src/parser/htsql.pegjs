@@ -25,8 +25,31 @@ start
   = Segment
   / FieldBlock
 
+SegmentExtra
+  = "." Identifier "(" ArgumentList? ")"
+  / "." "sort" "(" SortList? ")"
+  / "." Identifier
+
+
 Segment
-  = segment:"/" segment:DottedIdentifier ids:("[" LocatorList "]")? functions:FunctionList? whitespaces? fields:FieldBlock? conditions:ConditionList? { return array( "name" => $segment, "type" => 'Segment', "ids" => $ids? $ids[1] : null, "functions" => $functions, "fields" => $fields, "conditions" => $conditions ); }
+  = segment:"/" segment:Identifier segment_right:SegmentExtra* ids:("[" LocatorList "]")? __ fields:FieldBlock? conditions:ConditionList? {
+    $functions = array();
+    $item = NULL;
+    while($item = array_pop($segment_right)) {
+      if ($item[2] == "(") {
+        $functions[] = array("type" => "Function", "name" => $item[1], "params" => $item[3]);
+      } else {
+        $segment += "." + $item[1];
+      }
+    }
+    return array(
+      "name" => $segment,
+      "type" => 'Segment',
+      "ids" => $ids? $ids[1] : null,
+      "functions" => $functions,
+      "fields" => $fields,
+      "conditions" => $conditions );
+  }
 
 ConditionList
   = "?" first:Condition rest:("&" Condition)* { return buildList($first, $rest, 1); }
@@ -53,22 +76,22 @@ Locator
   / Identifier
 
 LocatorList
-  = first:Locator rest:(whitespaces? "," whitespaces? Locator)* {
+  = first:Locator rest:(__ "," __ Locator)* {
        return buildList($first, $rest, 1);
      }
 
 SortList
-  = first:(ColumnIdentifier SortDirection?) whitespaces? rest:("," whitespaces? (ColumnIdentifier SortDirection?))* {
+  = first:(ColumnIdentifier SortDirection?) __ rest:("," __ (ColumnIdentifier SortDirection?))* {
        return buildList($first, $rest, 2);
      }
 
 ArgumentList
-  = first:Locator rest:(whitespaces? "," Locator whitespaces?)* {
+  = first:Locator rest:(__ "," __ Locator __)* {
        return buildList($first, $rest, 3);
      }
 
 FieldList
-  = first:(Field) rest:("," whitespaces? Field)* {
+  = first:(Field) rest:("," __ Field)* {
       return buildList($first, $rest, 2);
     }
 
@@ -178,8 +201,8 @@ null
   = "null"
 
 num
-  = [+-]? ([0-9]+ / [0-9]* "." [0-9]+) ("e" [+-]? [0-9]+)? {
-      return parseFloat(text());
+  = parts:$([+-]? [0-9]+) {
+      return floatval($parts);
     }
 
 int
@@ -226,8 +249,12 @@ _ "whitespace"
 whitespace
   = [ \t\n\r]
 
+__
+  = whitespace*
+
 whitespaces
   = whitespace*
+
 nl
   = "\n"
   / "\r\n"

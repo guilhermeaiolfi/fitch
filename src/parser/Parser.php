@@ -342,8 +342,6 @@ class Parser{
     private $peg_c130;
     private $peg_c131;
     private $peg_c132;
-    private $peg_c133;
-    private $peg_c134;
 
     private function peg_parsestart() {
 
@@ -355,7 +353,7 @@ class Parser{
       return $s0;
     }
 
-    private function peg_parseSegment() {
+    private function peg_parseSegmentExtra() {
 
       $s0 = $this->peg_currPos;
       if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c1) {
@@ -366,67 +364,211 @@ class Parser{
         if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c2); }
       }
       if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_parseDottedIdentifier();
+        $s2 = $this->peg_parseIdentifier();
         if ($s2 !== $this->peg_FAILED) {
-          $s3 = $this->peg_currPos;
-          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c4) {
-            $s4 = $this->peg_c4;
+          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c3) {
+            $s3 = $this->peg_c3;
             $this->peg_currPos++;
           } else {
-            $s4 = $this->peg_FAILED;
-            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c5); }
-          }
-          if ($s4 !== $this->peg_FAILED) {
-            $s5 = $this->peg_parseLocatorList();
-            if ($s5 !== $this->peg_FAILED) {
-              if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c6) {
-                $s6 = $this->peg_c6;
-                $this->peg_currPos++;
-              } else {
-                $s6 = $this->peg_FAILED;
-                if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c7); }
-              }
-              if ($s6 !== $this->peg_FAILED) {
-                $s4 = array($s4, $s5, $s6);
-                $s3 = $s4;
-              } else {
-                $this->peg_currPos = $s3;
-                $s3 = $this->peg_c0;
-              }
-            } else {
-              $this->peg_currPos = $s3;
-              $s3 = $this->peg_c0;
-            }
-          } else {
-            $this->peg_currPos = $s3;
-            $s3 = $this->peg_c0;
-          }
-          if ($s3 === $this->peg_FAILED) {
-            $s3 = $this->peg_c3;
+            $s3 = $this->peg_FAILED;
+            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c4); }
           }
           if ($s3 !== $this->peg_FAILED) {
-            $s4 = $this->peg_parseFunctionList();
+            $s4 = $this->peg_parseArgumentList();
             if ($s4 === $this->peg_FAILED) {
-              $s4 = $this->peg_c3;
+              $s4 = $this->peg_c5;
             }
             if ($s4 !== $this->peg_FAILED) {
-              $s5 = $this->peg_parsewhitespaces();
-              if ($s5 === $this->peg_FAILED) {
-                $s5 = $this->peg_c3;
+              if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c6) {
+                $s5 = $this->peg_c6;
+                $this->peg_currPos++;
+              } else {
+                $s5 = $this->peg_FAILED;
+                if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c7); }
               }
+              if ($s5 !== $this->peg_FAILED) {
+                $s1 = array($s1, $s2, $s3, $s4, $s5);
+                $s0 = $s1;
+              } else {
+                $this->peg_currPos = $s0;
+                $s0 = $this->peg_c0;
+              }
+            } else {
+              $this->peg_currPos = $s0;
+              $s0 = $this->peg_c0;
+            }
+          } else {
+            $this->peg_currPos = $s0;
+            $s0 = $this->peg_c0;
+          }
+        } else {
+          $this->peg_currPos = $s0;
+          $s0 = $this->peg_c0;
+        }
+      } else {
+        $this->peg_currPos = $s0;
+        $s0 = $this->peg_c0;
+      }
+      if ($s0 === $this->peg_FAILED) {
+        $s0 = $this->peg_currPos;
+        if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c1) {
+          $s1 = $this->peg_c1;
+          $this->peg_currPos++;
+        } else {
+          $s1 = $this->peg_FAILED;
+          if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c2); }
+        }
+        if ($s1 !== $this->peg_FAILED) {
+          if (mb_substr($this->input, $this->peg_currPos, 4, "UTF-8") === $this->peg_c8) {
+            $s2 = $this->peg_c8;
+            $this->peg_currPos += 4;
+          } else {
+            $s2 = $this->peg_FAILED;
+            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c9); }
+          }
+          if ($s2 !== $this->peg_FAILED) {
+            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c3) {
+              $s3 = $this->peg_c3;
+              $this->peg_currPos++;
+            } else {
+              $s3 = $this->peg_FAILED;
+              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c4); }
+            }
+            if ($s3 !== $this->peg_FAILED) {
+              $s4 = $this->peg_parseSortList();
+              if ($s4 === $this->peg_FAILED) {
+                $s4 = $this->peg_c5;
+              }
+              if ($s4 !== $this->peg_FAILED) {
+                if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c6) {
+                  $s5 = $this->peg_c6;
+                  $this->peg_currPos++;
+                } else {
+                  $s5 = $this->peg_FAILED;
+                  if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c7); }
+                }
+                if ($s5 !== $this->peg_FAILED) {
+                  $s1 = array($s1, $s2, $s3, $s4, $s5);
+                  $s0 = $s1;
+                } else {
+                  $this->peg_currPos = $s0;
+                  $s0 = $this->peg_c0;
+                }
+              } else {
+                $this->peg_currPos = $s0;
+                $s0 = $this->peg_c0;
+              }
+            } else {
+              $this->peg_currPos = $s0;
+              $s0 = $this->peg_c0;
+            }
+          } else {
+            $this->peg_currPos = $s0;
+            $s0 = $this->peg_c0;
+          }
+        } else {
+          $this->peg_currPos = $s0;
+          $s0 = $this->peg_c0;
+        }
+        if ($s0 === $this->peg_FAILED) {
+          $s0 = $this->peg_currPos;
+          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c1) {
+            $s1 = $this->peg_c1;
+            $this->peg_currPos++;
+          } else {
+            $s1 = $this->peg_FAILED;
+            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c2); }
+          }
+          if ($s1 !== $this->peg_FAILED) {
+            $s2 = $this->peg_parseIdentifier();
+            if ($s2 !== $this->peg_FAILED) {
+              $s1 = array($s1, $s2);
+              $s0 = $s1;
+            } else {
+              $this->peg_currPos = $s0;
+              $s0 = $this->peg_c0;
+            }
+          } else {
+            $this->peg_currPos = $s0;
+            $s0 = $this->peg_c0;
+          }
+        }
+      }
+
+      return $s0;
+    }
+
+    private function peg_parseSegment() {
+
+      $s0 = $this->peg_currPos;
+      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c10) {
+        $s1 = $this->peg_c10;
+        $this->peg_currPos++;
+      } else {
+        $s1 = $this->peg_FAILED;
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c11); }
+      }
+      if ($s1 !== $this->peg_FAILED) {
+        $s2 = $this->peg_parseIdentifier();
+        if ($s2 !== $this->peg_FAILED) {
+          $s3 = $this->peg_c12;
+          $s4 = $this->peg_parseSegmentExtra();
+          while ($s4 !== $this->peg_FAILED) {
+            $s3[] = $s4;
+            $s4 = $this->peg_parseSegmentExtra();
+          }
+          if ($s3 !== $this->peg_FAILED) {
+            $s4 = $this->peg_currPos;
+            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c13) {
+              $s5 = $this->peg_c13;
+              $this->peg_currPos++;
+            } else {
+              $s5 = $this->peg_FAILED;
+              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c14); }
+            }
+            if ($s5 !== $this->peg_FAILED) {
+              $s6 = $this->peg_parseLocatorList();
+              if ($s6 !== $this->peg_FAILED) {
+                if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c15) {
+                  $s7 = $this->peg_c15;
+                  $this->peg_currPos++;
+                } else {
+                  $s7 = $this->peg_FAILED;
+                  if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c16); }
+                }
+                if ($s7 !== $this->peg_FAILED) {
+                  $s5 = array($s5, $s6, $s7);
+                  $s4 = $s5;
+                } else {
+                  $this->peg_currPos = $s4;
+                  $s4 = $this->peg_c0;
+                }
+              } else {
+                $this->peg_currPos = $s4;
+                $s4 = $this->peg_c0;
+              }
+            } else {
+              $this->peg_currPos = $s4;
+              $s4 = $this->peg_c0;
+            }
+            if ($s4 === $this->peg_FAILED) {
+              $s4 = $this->peg_c5;
+            }
+            if ($s4 !== $this->peg_FAILED) {
+              $s5 = $this->peg_parse__();
               if ($s5 !== $this->peg_FAILED) {
                 $s6 = $this->peg_parseFieldBlock();
                 if ($s6 === $this->peg_FAILED) {
-                  $s6 = $this->peg_c3;
+                  $s6 = $this->peg_c5;
                 }
                 if ($s6 !== $this->peg_FAILED) {
                   $s7 = $this->peg_parseConditionList();
                   if ($s7 === $this->peg_FAILED) {
-                    $s7 = $this->peg_c3;
+                    $s7 = $this->peg_c5;
                   }
                   if ($s7 !== $this->peg_FAILED) {
                     $this->peg_reportedPos = $s0;
-                    $s1 = call_user_func($this->peg_c8,$s2, $s3, $s4, $s6, $s7);
+                    $s1 = call_user_func($this->peg_c17,$s2, $s3, $s4, $s6, $s7);
                     $s0 = $s1;
                   } else {
                     $this->peg_currPos = $s0;
@@ -463,24 +605,24 @@ class Parser{
     private function peg_parseConditionList() {
 
       $s0 = $this->peg_currPos;
-      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c9) {
-        $s1 = $this->peg_c9;
+      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c18) {
+        $s1 = $this->peg_c18;
         $this->peg_currPos++;
       } else {
         $s1 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c10); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c19); }
       }
       if ($s1 !== $this->peg_FAILED) {
         $s2 = $this->peg_parseCondition();
         if ($s2 !== $this->peg_FAILED) {
-          $s3 = $this->peg_c11;
+          $s3 = $this->peg_c12;
           $s4 = $this->peg_currPos;
-          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c12) {
-            $s5 = $this->peg_c12;
+          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c20) {
+            $s5 = $this->peg_c20;
             $this->peg_currPos++;
           } else {
             $s5 = $this->peg_FAILED;
-            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c13); }
+            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c21); }
           }
           if ($s5 !== $this->peg_FAILED) {
             $s6 = $this->peg_parseCondition();
@@ -498,12 +640,12 @@ class Parser{
           while ($s4 !== $this->peg_FAILED) {
             $s3[] = $s4;
             $s4 = $this->peg_currPos;
-            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c12) {
-              $s5 = $this->peg_c12;
+            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c20) {
+              $s5 = $this->peg_c20;
               $this->peg_currPos++;
             } else {
               $s5 = $this->peg_FAILED;
-              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c13); }
+              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c21); }
             }
             if ($s5 !== $this->peg_FAILED) {
               $s6 = $this->peg_parseCondition();
@@ -521,7 +663,7 @@ class Parser{
           }
           if ($s3 !== $this->peg_FAILED) {
             $this->peg_reportedPos = $s0;
-            $s1 = call_user_func($this->peg_c14,$s2, $s3);
+            $s1 = call_user_func($this->peg_c22,$s2, $s3);
             $s0 = $s1;
           } else {
             $this->peg_currPos = $s0;
@@ -549,7 +691,7 @@ class Parser{
           $s3 = $this->peg_parseValue();
           if ($s3 !== $this->peg_FAILED) {
             $this->peg_reportedPos = $s0;
-            $s1 = call_user_func($this->peg_c15,$s1, $s2, $s3);
+            $s1 = call_user_func($this->peg_c23,$s1, $s2, $s3);
             $s0 = $s1;
           } else {
             $this->peg_currPos = $s0;
@@ -570,26 +712,26 @@ class Parser{
     private function peg_parseFieldBlock() {
 
       $s0 = $this->peg_currPos;
-      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c16) {
-        $s1 = $this->peg_c16;
+      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c24) {
+        $s1 = $this->peg_c24;
         $this->peg_currPos++;
       } else {
         $s1 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c17); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c25); }
       }
       if ($s1 !== $this->peg_FAILED) {
         $s2 = $this->peg_parseFieldList();
         if ($s2 !== $this->peg_FAILED) {
-          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c18) {
-            $s3 = $this->peg_c18;
+          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c26) {
+            $s3 = $this->peg_c26;
             $this->peg_currPos++;
           } else {
             $s3 = $this->peg_FAILED;
-            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c19); }
+            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c27); }
           }
           if ($s3 !== $this->peg_FAILED) {
             $this->peg_reportedPos = $s0;
-            $s1 = call_user_func($this->peg_c20,$s2);
+            $s1 = call_user_func($this->peg_c28,$s2);
             $s0 = $s1;
           } else {
             $this->peg_currPos = $s0;
@@ -610,14 +752,14 @@ class Parser{
     private function peg_parseFunctionList() {
 
       $s0 = $this->peg_currPos;
-      $s1 = $this->peg_c11;
+      $s1 = $this->peg_c12;
       $s2 = $this->peg_currPos;
-      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c21) {
-        $s3 = $this->peg_c21;
+      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c1) {
+        $s3 = $this->peg_c1;
         $this->peg_currPos++;
       } else {
         $s3 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c22); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c2); }
       }
       if ($s3 !== $this->peg_FAILED) {
         $s4 = $this->peg_parseFunction();
@@ -635,12 +777,12 @@ class Parser{
       while ($s2 !== $this->peg_FAILED) {
         $s1[] = $s2;
         $s2 = $this->peg_currPos;
-        if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c21) {
-          $s3 = $this->peg_c21;
+        if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c1) {
+          $s3 = $this->peg_c1;
           $this->peg_currPos++;
         } else {
           $s3 = $this->peg_FAILED;
-          if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c22); }
+          if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c2); }
         }
         if ($s3 !== $this->peg_FAILED) {
           $s4 = $this->peg_parseFunction();
@@ -658,7 +800,7 @@ class Parser{
       }
       if ($s1 !== $this->peg_FAILED) {
         $this->peg_reportedPos = $s0;
-        $s1 = call_user_func($this->peg_c23,$s1);
+        $s1 = call_user_func($this->peg_c29,$s1);
       }
       $s0 = $s1;
 
@@ -668,33 +810,33 @@ class Parser{
     private function peg_parseFunction() {
 
       $s0 = $this->peg_currPos;
-      if (mb_substr($this->input, $this->peg_currPos, 4, "UTF-8") === $this->peg_c24) {
-        $s1 = $this->peg_c24;
+      if (mb_substr($this->input, $this->peg_currPos, 4, "UTF-8") === $this->peg_c8) {
+        $s1 = $this->peg_c8;
         $this->peg_currPos += 4;
       } else {
         $s1 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c25); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c9); }
       }
       if ($s1 !== $this->peg_FAILED) {
-        if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c26) {
-          $s2 = $this->peg_c26;
+        if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c3) {
+          $s2 = $this->peg_c3;
           $this->peg_currPos++;
         } else {
           $s2 = $this->peg_FAILED;
-          if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c27); }
+          if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c4); }
         }
         if ($s2 !== $this->peg_FAILED) {
           $s3 = $this->peg_parseSortList();
           if ($s3 === $this->peg_FAILED) {
-            $s3 = $this->peg_c3;
+            $s3 = $this->peg_c5;
           }
           if ($s3 !== $this->peg_FAILED) {
-            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c28) {
-              $s4 = $this->peg_c28;
+            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c6) {
+              $s4 = $this->peg_c6;
               $this->peg_currPos++;
             } else {
               $s4 = $this->peg_FAILED;
-              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c29); }
+              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c7); }
             }
             if ($s4 !== $this->peg_FAILED) {
               $this->peg_reportedPos = $s0;
@@ -720,25 +862,25 @@ class Parser{
         $s0 = $this->peg_currPos;
         $s1 = $this->peg_parseIdentifier();
         if ($s1 !== $this->peg_FAILED) {
-          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c26) {
-            $s2 = $this->peg_c26;
+          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c3) {
+            $s2 = $this->peg_c3;
             $this->peg_currPos++;
           } else {
             $s2 = $this->peg_FAILED;
-            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c27); }
+            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c4); }
           }
           if ($s2 !== $this->peg_FAILED) {
             $s3 = $this->peg_parseArgumentList();
             if ($s3 === $this->peg_FAILED) {
-              $s3 = $this->peg_c3;
+              $s3 = $this->peg_c5;
             }
             if ($s3 !== $this->peg_FAILED) {
-              if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c28) {
-                $s4 = $this->peg_c28;
+              if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c6) {
+                $s4 = $this->peg_c6;
                 $this->peg_currPos++;
               } else {
                 $s4 = $this->peg_FAILED;
-                if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c29); }
+                if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c7); }
               }
               if ($s4 !== $this->peg_FAILED) {
                 $this->peg_reportedPos = $s0;
@@ -802,12 +944,9 @@ class Parser{
       $s0 = $this->peg_currPos;
       $s1 = $this->peg_parseLocator();
       if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_c11;
+        $s2 = $this->peg_c12;
         $s3 = $this->peg_currPos;
-        $s4 = $this->peg_parsewhitespaces();
-        if ($s4 === $this->peg_FAILED) {
-          $s4 = $this->peg_c3;
-        }
+        $s4 = $this->peg_parse__();
         if ($s4 !== $this->peg_FAILED) {
           if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c35) {
             $s5 = $this->peg_c35;
@@ -817,10 +956,7 @@ class Parser{
             if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c36); }
           }
           if ($s5 !== $this->peg_FAILED) {
-            $s6 = $this->peg_parsewhitespaces();
-            if ($s6 === $this->peg_FAILED) {
-              $s6 = $this->peg_c3;
-            }
+            $s6 = $this->peg_parse__();
             if ($s6 !== $this->peg_FAILED) {
               $s7 = $this->peg_parseLocator();
               if ($s7 !== $this->peg_FAILED) {
@@ -845,10 +981,7 @@ class Parser{
         while ($s3 !== $this->peg_FAILED) {
           $s2[] = $s3;
           $s3 = $this->peg_currPos;
-          $s4 = $this->peg_parsewhitespaces();
-          if ($s4 === $this->peg_FAILED) {
-            $s4 = $this->peg_c3;
-          }
+          $s4 = $this->peg_parse__();
           if ($s4 !== $this->peg_FAILED) {
             if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c35) {
               $s5 = $this->peg_c35;
@@ -858,10 +991,7 @@ class Parser{
               if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c36); }
             }
             if ($s5 !== $this->peg_FAILED) {
-              $s6 = $this->peg_parsewhitespaces();
-              if ($s6 === $this->peg_FAILED) {
-                $s6 = $this->peg_c3;
-              }
+              $s6 = $this->peg_parse__();
               if ($s6 !== $this->peg_FAILED) {
                 $s7 = $this->peg_parseLocator();
                 if ($s7 !== $this->peg_FAILED) {
@@ -908,7 +1038,7 @@ class Parser{
       if ($s2 !== $this->peg_FAILED) {
         $s3 = $this->peg_parseSortDirection();
         if ($s3 === $this->peg_FAILED) {
-          $s3 = $this->peg_c3;
+          $s3 = $this->peg_c5;
         }
         if ($s3 !== $this->peg_FAILED) {
           $s2 = array($s2, $s3);
@@ -922,12 +1052,9 @@ class Parser{
         $s1 = $this->peg_c0;
       }
       if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_parsewhitespaces();
-        if ($s2 === $this->peg_FAILED) {
-          $s2 = $this->peg_c3;
-        }
+        $s2 = $this->peg_parse__();
         if ($s2 !== $this->peg_FAILED) {
-          $s3 = $this->peg_c11;
+          $s3 = $this->peg_c12;
           $s4 = $this->peg_currPos;
           if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c35) {
             $s5 = $this->peg_c35;
@@ -937,17 +1064,14 @@ class Parser{
             if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c36); }
           }
           if ($s5 !== $this->peg_FAILED) {
-            $s6 = $this->peg_parsewhitespaces();
-            if ($s6 === $this->peg_FAILED) {
-              $s6 = $this->peg_c3;
-            }
+            $s6 = $this->peg_parse__();
             if ($s6 !== $this->peg_FAILED) {
               $s7 = $this->peg_currPos;
               $s8 = $this->peg_parseColumnIdentifier();
               if ($s8 !== $this->peg_FAILED) {
                 $s9 = $this->peg_parseSortDirection();
                 if ($s9 === $this->peg_FAILED) {
-                  $s9 = $this->peg_c3;
+                  $s9 = $this->peg_c5;
                 }
                 if ($s9 !== $this->peg_FAILED) {
                   $s8 = array($s8, $s9);
@@ -986,17 +1110,14 @@ class Parser{
               if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c36); }
             }
             if ($s5 !== $this->peg_FAILED) {
-              $s6 = $this->peg_parsewhitespaces();
-              if ($s6 === $this->peg_FAILED) {
-                $s6 = $this->peg_c3;
-              }
+              $s6 = $this->peg_parse__();
               if ($s6 !== $this->peg_FAILED) {
                 $s7 = $this->peg_currPos;
                 $s8 = $this->peg_parseColumnIdentifier();
                 if ($s8 !== $this->peg_FAILED) {
                   $s9 = $this->peg_parseSortDirection();
                   if ($s9 === $this->peg_FAILED) {
-                    $s9 = $this->peg_c3;
+                    $s9 = $this->peg_c5;
                   }
                   if ($s9 !== $this->peg_FAILED) {
                     $s8 = array($s8, $s9);
@@ -1050,12 +1171,9 @@ class Parser{
       $s0 = $this->peg_currPos;
       $s1 = $this->peg_parseLocator();
       if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_c11;
+        $s2 = $this->peg_c12;
         $s3 = $this->peg_currPos;
-        $s4 = $this->peg_parsewhitespaces();
-        if ($s4 === $this->peg_FAILED) {
-          $s4 = $this->peg_c3;
-        }
+        $s4 = $this->peg_parse__();
         if ($s4 !== $this->peg_FAILED) {
           if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c35) {
             $s5 = $this->peg_c35;
@@ -1065,15 +1183,18 @@ class Parser{
             if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c36); }
           }
           if ($s5 !== $this->peg_FAILED) {
-            $s6 = $this->peg_parseLocator();
+            $s6 = $this->peg_parse__();
             if ($s6 !== $this->peg_FAILED) {
-              $s7 = $this->peg_parsewhitespaces();
-              if ($s7 === $this->peg_FAILED) {
-                $s7 = $this->peg_c3;
-              }
+              $s7 = $this->peg_parseLocator();
               if ($s7 !== $this->peg_FAILED) {
-                $s4 = array($s4, $s5, $s6, $s7);
-                $s3 = $s4;
+                $s8 = $this->peg_parse__();
+                if ($s8 !== $this->peg_FAILED) {
+                  $s4 = array($s4, $s5, $s6, $s7, $s8);
+                  $s3 = $s4;
+                } else {
+                  $this->peg_currPos = $s3;
+                  $s3 = $this->peg_c0;
+                }
               } else {
                 $this->peg_currPos = $s3;
                 $s3 = $this->peg_c0;
@@ -1093,10 +1214,7 @@ class Parser{
         while ($s3 !== $this->peg_FAILED) {
           $s2[] = $s3;
           $s3 = $this->peg_currPos;
-          $s4 = $this->peg_parsewhitespaces();
-          if ($s4 === $this->peg_FAILED) {
-            $s4 = $this->peg_c3;
-          }
+          $s4 = $this->peg_parse__();
           if ($s4 !== $this->peg_FAILED) {
             if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c35) {
               $s5 = $this->peg_c35;
@@ -1106,15 +1224,18 @@ class Parser{
               if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c36); }
             }
             if ($s5 !== $this->peg_FAILED) {
-              $s6 = $this->peg_parseLocator();
+              $s6 = $this->peg_parse__();
               if ($s6 !== $this->peg_FAILED) {
-                $s7 = $this->peg_parsewhitespaces();
-                if ($s7 === $this->peg_FAILED) {
-                  $s7 = $this->peg_c3;
-                }
+                $s7 = $this->peg_parseLocator();
                 if ($s7 !== $this->peg_FAILED) {
-                  $s4 = array($s4, $s5, $s6, $s7);
-                  $s3 = $s4;
+                  $s8 = $this->peg_parse__();
+                  if ($s8 !== $this->peg_FAILED) {
+                    $s4 = array($s4, $s5, $s6, $s7, $s8);
+                    $s3 = $s4;
+                  } else {
+                    $this->peg_currPos = $s3;
+                    $s3 = $this->peg_c0;
+                  }
                 } else {
                   $this->peg_currPos = $s3;
                   $s3 = $this->peg_c0;
@@ -1153,7 +1274,7 @@ class Parser{
       $s0 = $this->peg_currPos;
       $s1 = $this->peg_parseField();
       if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_c11;
+        $s2 = $this->peg_c12;
         $s3 = $this->peg_currPos;
         if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c35) {
           $s4 = $this->peg_c35;
@@ -1163,10 +1284,7 @@ class Parser{
           if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c36); }
         }
         if ($s4 !== $this->peg_FAILED) {
-          $s5 = $this->peg_parsewhitespaces();
-          if ($s5 === $this->peg_FAILED) {
-            $s5 = $this->peg_c3;
-          }
+          $s5 = $this->peg_parse__();
           if ($s5 !== $this->peg_FAILED) {
             $s6 = $this->peg_parseField();
             if ($s6 !== $this->peg_FAILED) {
@@ -1195,10 +1313,7 @@ class Parser{
             if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c36); }
           }
           if ($s4 !== $this->peg_FAILED) {
-            $s5 = $this->peg_parsewhitespaces();
-            if ($s5 === $this->peg_FAILED) {
-              $s5 = $this->peg_c3;
-            }
+            $s5 = $this->peg_parse__();
             if ($s5 !== $this->peg_FAILED) {
               $s6 = $this->peg_parseField();
               if ($s6 !== $this->peg_FAILED) {
@@ -1279,12 +1394,12 @@ class Parser{
           $s2 = $this->peg_c0;
         }
         if ($s2 === $this->peg_FAILED) {
-          $s2 = $this->peg_c3;
+          $s2 = $this->peg_c5;
         }
         if ($s2 !== $this->peg_FAILED) {
           $s3 = $this->peg_parseFieldBlock();
           if ($s3 === $this->peg_FAILED) {
-            $s3 = $this->peg_c3;
+            $s3 = $this->peg_c5;
           }
           if ($s3 !== $this->peg_FAILED) {
             $this->peg_reportedPos = $s0;
@@ -1321,7 +1436,7 @@ class Parser{
         if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c32); }
       }
       if ($s2 === $this->peg_FAILED) {
-        $s2 = $this->peg_c3;
+        $s2 = $this->peg_c5;
       }
       if ($s2 !== $this->peg_FAILED) {
         $s2 = mb_substr($this->input, $s1, $this->peg_currPos - $s1, "UTF-8");
@@ -1330,7 +1445,7 @@ class Parser{
       if ($s1 !== $this->peg_FAILED) {
         $s2 = $this->peg_parsevarstart();
         if ($s2 !== $this->peg_FAILED) {
-          $s3 = $this->peg_c11;
+          $s3 = $this->peg_c12;
           $s4 = $this->peg_parsedottedchar();
           while ($s4 !== $this->peg_FAILED) {
             $s3[] = $s4;
@@ -1368,7 +1483,7 @@ class Parser{
         if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c32); }
       }
       if ($s2 === $this->peg_FAILED) {
-        $s2 = $this->peg_c3;
+        $s2 = $this->peg_c5;
       }
       if ($s2 !== $this->peg_FAILED) {
         $s2 = mb_substr($this->input, $s1, $this->peg_currPos - $s1, "UTF-8");
@@ -1377,7 +1492,7 @@ class Parser{
       if ($s1 !== $this->peg_FAILED) {
         $s2 = $this->peg_parsevarstart();
         if ($s2 !== $this->peg_FAILED) {
-          $s3 = $this->peg_c11;
+          $s3 = $this->peg_c12;
           $s4 = $this->peg_parsedashedalphanumeric();
           while ($s4 !== $this->peg_FAILED) {
             $s3[] = $s4;
@@ -1415,7 +1530,7 @@ class Parser{
         if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c32); }
       }
       if ($s2 === $this->peg_FAILED) {
-        $s2 = $this->peg_c3;
+        $s2 = $this->peg_c5;
       }
       if ($s2 !== $this->peg_FAILED) {
         $s2 = mb_substr($this->input, $s1, $this->peg_currPos - $s1, "UTF-8");
@@ -1424,7 +1539,7 @@ class Parser{
       if ($s1 !== $this->peg_FAILED) {
         $s2 = $this->peg_parsevarstart();
         if ($s2 !== $this->peg_FAILED) {
-          $s3 = $this->peg_c11;
+          $s3 = $this->peg_c12;
           $s4 = $this->peg_parsealphanumeric();
           while ($s4 !== $this->peg_FAILED) {
             $s3[] = $s4;
@@ -1545,7 +1660,7 @@ class Parser{
         if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c58); }
       }
       if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_c11;
+        $s2 = $this->peg_c12;
         if (peg_regex_test($this->peg_c59, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
           $s3 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
           $this->peg_currPos++;
@@ -1656,7 +1771,7 @@ class Parser{
         if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c66); }
       }
       if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_c11;
+        $s2 = $this->peg_c12;
         if (peg_regex_test($this->peg_c67, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
           $s3 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
           $this->peg_currPos++;
@@ -1773,27 +1888,27 @@ class Parser{
         if ($s4 !== $this->peg_FAILED) {
           $s5 = $this->peg_parsehexDigit();
           if ($s5 === $this->peg_FAILED) {
-            $s5 = $this->peg_c3;
+            $s5 = $this->peg_c5;
           }
           if ($s5 !== $this->peg_FAILED) {
             $s6 = $this->peg_parsehexDigit();
             if ($s6 === $this->peg_FAILED) {
-              $s6 = $this->peg_c3;
+              $s6 = $this->peg_c5;
             }
             if ($s6 !== $this->peg_FAILED) {
               $s7 = $this->peg_parsehexDigit();
               if ($s7 === $this->peg_FAILED) {
-                $s7 = $this->peg_c3;
+                $s7 = $this->peg_c5;
               }
               if ($s7 !== $this->peg_FAILED) {
                 $s8 = $this->peg_parsehexDigit();
                 if ($s8 === $this->peg_FAILED) {
-                  $s8 = $this->peg_c3;
+                  $s8 = $this->peg_c5;
                 }
                 if ($s8 !== $this->peg_FAILED) {
                   $s9 = $this->peg_parsehexDigit();
                   if ($s9 === $this->peg_FAILED) {
-                    $s9 = $this->peg_c3;
+                    $s9 = $this->peg_c5;
                   }
                   if ($s9 !== $this->peg_FAILED) {
                     $s4 = array($s4, $s5, $s6, $s7, $s8, $s9);
@@ -1844,7 +1959,7 @@ class Parser{
             }
           }
           if ($s3 === $this->peg_FAILED) {
-            $s3 = $this->peg_c3;
+            $s3 = $this->peg_c5;
           }
           if ($s3 !== $this->peg_FAILED) {
             $this->peg_reportedPos = $s0;
@@ -1906,7 +2021,7 @@ class Parser{
     private function peg_parsechars() {
 
       $s0 = $this->peg_currPos;
-      $s1 = $this->peg_c11;
+      $s1 = $this->peg_c12;
       $s2 = $this->peg_parsechar();
       if ($s2 !== $this->peg_FAILED) {
         while ($s2 !== $this->peg_FAILED) {
@@ -2174,183 +2289,61 @@ class Parser{
     private function peg_parsenum() {
 
       $s0 = $this->peg_currPos;
+      $s1 = $this->peg_currPos;
+      $s2 = $this->peg_currPos;
       if (peg_regex_test($this->peg_c113, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-        $s1 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
+        $s3 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
         $this->peg_currPos++;
       } else {
-        $s1 = $this->peg_FAILED;
+        $s3 = $this->peg_FAILED;
         if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c114); }
       }
-      if ($s1 === $this->peg_FAILED) {
-        $s1 = $this->peg_c3;
+      if ($s3 === $this->peg_FAILED) {
+        $s3 = $this->peg_c5;
       }
-      if ($s1 !== $this->peg_FAILED) {
-        $s2 = $this->peg_c11;
+      if ($s3 !== $this->peg_FAILED) {
+        $s4 = $this->peg_c12;
         if (peg_regex_test($this->peg_c115, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-          $s3 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
+          $s5 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
           $this->peg_currPos++;
         } else {
-          $s3 = $this->peg_FAILED;
+          $s5 = $this->peg_FAILED;
           if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
         }
-        if ($s3 !== $this->peg_FAILED) {
-          while ($s3 !== $this->peg_FAILED) {
-            $s2[] = $s3;
+        if ($s5 !== $this->peg_FAILED) {
+          while ($s5 !== $this->peg_FAILED) {
+            $s4[] = $s5;
             if (peg_regex_test($this->peg_c115, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-              $s3 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
-              $this->peg_currPos++;
-            } else {
-              $s3 = $this->peg_FAILED;
-              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
-            }
-          }
-        } else {
-          $s2 = $this->peg_c0;
-        }
-        if ($s2 === $this->peg_FAILED) {
-          $s2 = $this->peg_currPos;
-          $s3 = $this->peg_c11;
-          if (peg_regex_test($this->peg_c115, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-            $s4 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
-            $this->peg_currPos++;
-          } else {
-            $s4 = $this->peg_FAILED;
-            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
-          }
-          while ($s4 !== $this->peg_FAILED) {
-            $s3[] = $s4;
-            if (peg_regex_test($this->peg_c115, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-              $s4 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
-              $this->peg_currPos++;
-            } else {
-              $s4 = $this->peg_FAILED;
-              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
-            }
-          }
-          if ($s3 !== $this->peg_FAILED) {
-            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c21) {
-              $s4 = $this->peg_c21;
-              $this->peg_currPos++;
-            } else {
-              $s4 = $this->peg_FAILED;
-              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c22); }
-            }
-            if ($s4 !== $this->peg_FAILED) {
-              $s5 = $this->peg_c11;
-              if (peg_regex_test($this->peg_c115, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-                $s6 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
-                $this->peg_currPos++;
-              } else {
-                $s6 = $this->peg_FAILED;
-                if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
-              }
-              if ($s6 !== $this->peg_FAILED) {
-                while ($s6 !== $this->peg_FAILED) {
-                  $s5[] = $s6;
-                  if (peg_regex_test($this->peg_c115, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-                    $s6 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
-                    $this->peg_currPos++;
-                  } else {
-                    $s6 = $this->peg_FAILED;
-                    if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
-                  }
-                }
-              } else {
-                $s5 = $this->peg_c0;
-              }
-              if ($s5 !== $this->peg_FAILED) {
-                $s3 = array($s3, $s4, $s5);
-                $s2 = $s3;
-              } else {
-                $this->peg_currPos = $s2;
-                $s2 = $this->peg_c0;
-              }
-            } else {
-              $this->peg_currPos = $s2;
-              $s2 = $this->peg_c0;
-            }
-          } else {
-            $this->peg_currPos = $s2;
-            $s2 = $this->peg_c0;
-          }
-        }
-        if ($s2 !== $this->peg_FAILED) {
-          $s3 = $this->peg_currPos;
-          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c117) {
-            $s4 = $this->peg_c117;
-            $this->peg_currPos++;
-          } else {
-            $s4 = $this->peg_FAILED;
-            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c118); }
-          }
-          if ($s4 !== $this->peg_FAILED) {
-            if (peg_regex_test($this->peg_c113, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
               $s5 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
               $this->peg_currPos++;
             } else {
               $s5 = $this->peg_FAILED;
-              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c114); }
+              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
             }
-            if ($s5 === $this->peg_FAILED) {
-              $s5 = $this->peg_c3;
-            }
-            if ($s5 !== $this->peg_FAILED) {
-              $s6 = $this->peg_c11;
-              if (peg_regex_test($this->peg_c115, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-                $s7 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
-                $this->peg_currPos++;
-              } else {
-                $s7 = $this->peg_FAILED;
-                if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
-              }
-              if ($s7 !== $this->peg_FAILED) {
-                while ($s7 !== $this->peg_FAILED) {
-                  $s6[] = $s7;
-                  if (peg_regex_test($this->peg_c115, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-                    $s7 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
-                    $this->peg_currPos++;
-                  } else {
-                    $s7 = $this->peg_FAILED;
-                    if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c116); }
-                  }
-                }
-              } else {
-                $s6 = $this->peg_c0;
-              }
-              if ($s6 !== $this->peg_FAILED) {
-                $s4 = array($s4, $s5, $s6);
-                $s3 = $s4;
-              } else {
-                $this->peg_currPos = $s3;
-                $s3 = $this->peg_c0;
-              }
-            } else {
-              $this->peg_currPos = $s3;
-              $s3 = $this->peg_c0;
-            }
-          } else {
-            $this->peg_currPos = $s3;
-            $s3 = $this->peg_c0;
-          }
-          if ($s3 === $this->peg_FAILED) {
-            $s3 = $this->peg_c3;
-          }
-          if ($s3 !== $this->peg_FAILED) {
-            $this->peg_reportedPos = $s0;
-            $s1 = call_user_func($this->peg_c119);
-            $s0 = $s1;
-          } else {
-            $this->peg_currPos = $s0;
-            $s0 = $this->peg_c0;
           }
         } else {
-          $this->peg_currPos = $s0;
-          $s0 = $this->peg_c0;
+          $s4 = $this->peg_c0;
+        }
+        if ($s4 !== $this->peg_FAILED) {
+          $s3 = array($s3, $s4);
+          $s2 = $s3;
+        } else {
+          $this->peg_currPos = $s2;
+          $s2 = $this->peg_c0;
         }
       } else {
-        $this->peg_currPos = $s0;
-        $s0 = $this->peg_c0;
+        $this->peg_currPos = $s2;
+        $s2 = $this->peg_c0;
       }
+      if ($s2 !== $this->peg_FAILED) {
+        $s2 = mb_substr($this->input, $s1, $this->peg_currPos - $s1, "UTF-8");
+      }
+      $s1 = $s2;
+      if ($s1 !== $this->peg_FAILED) {
+        $this->peg_reportedPos = $s0;
+        $s1 = call_user_func($this->peg_c117,$s1);
+      }
+      $s0 = $s1;
 
       return $s0;
     }
@@ -2434,12 +2427,12 @@ class Parser{
     private function peg_parsefrac() {
 
       $s0 = $this->peg_currPos;
-      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c21) {
-        $s1 = $this->peg_c21;
+      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c1) {
+        $s1 = $this->peg_c1;
         $this->peg_currPos++;
       } else {
         $s1 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c22); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c2); }
       }
       if ($s1 !== $this->peg_FAILED) {
         $s2 = $this->peg_parsedigits();
@@ -2481,7 +2474,7 @@ class Parser{
 
     private function peg_parsedigits() {
 
-      $s0 = $this->peg_c11;
+      $s0 = $this->peg_c12;
       $s1 = $this->peg_parsedigit();
       if ($s1 !== $this->peg_FAILED) {
         while ($s1 !== $this->peg_FAILED) {
@@ -2498,12 +2491,12 @@ class Parser{
     private function peg_parsee() {
 
       $s0 = $this->peg_currPos;
-      if (peg_regex_test($this->peg_c120, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
+      if (peg_regex_test($this->peg_c118, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
         $s1 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
         $this->peg_currPos++;
       } else {
         $s1 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c121); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c119); }
       }
       if ($s1 !== $this->peg_FAILED) {
         if (peg_regex_test($this->peg_c113, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
@@ -2514,7 +2507,7 @@ class Parser{
           if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c114); }
         }
         if ($s2 === $this->peg_FAILED) {
-          $s2 = $this->peg_c3;
+          $s2 = $this->peg_c5;
         }
         if ($s2 !== $this->peg_FAILED) {
           $s1 = array($s1, $s2);
@@ -2546,6 +2539,19 @@ class Parser{
 
     private function peg_parsedigit19() {
 
+      if (peg_regex_test($this->peg_c120, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
+        $s0 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
+        $this->peg_currPos++;
+      } else {
+        $s0 = $this->peg_FAILED;
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c121); }
+      }
+
+      return $s0;
+    }
+
+    private function peg_parsehexDigit() {
+
       if (peg_regex_test($this->peg_c122, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
         $s0 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
         $this->peg_currPos++;
@@ -2557,23 +2563,10 @@ class Parser{
       return $s0;
     }
 
-    private function peg_parsehexDigit() {
-
-      if (peg_regex_test($this->peg_c124, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
-        $s0 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
-        $this->peg_currPos++;
-      } else {
-        $s0 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c125); }
-      }
-
-      return $s0;
-    }
-
     private function peg_parse_() {
 
       $this->peg_silentFails++;
-      $s0 = $this->peg_c11;
+      $s0 = $this->peg_c12;
       $s1 = $this->peg_parsewhitespace();
       while ($s1 !== $this->peg_FAILED) {
         $s0[] = $s1;
@@ -2582,7 +2575,7 @@ class Parser{
       $this->peg_silentFails--;
       if ($s0 === $this->peg_FAILED) {
         $s1 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c126); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c124); }
       }
 
       return $s0;
@@ -2590,12 +2583,24 @@ class Parser{
 
     private function peg_parsewhitespace() {
 
-      if (peg_regex_test($this->peg_c127, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
+      if (peg_regex_test($this->peg_c125, mb_substr($this->input, $this->peg_currPos, 1, "UTF-8"))) {
         $s0 = mb_substr($this->input, $this->peg_currPos, 1, "UTF-8");
         $this->peg_currPos++;
       } else {
         $s0 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c128); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c126); }
+      }
+
+      return $s0;
+    }
+
+    private function peg_parse__() {
+
+      $s0 = $this->peg_c12;
+      $s1 = $this->peg_parsewhitespace();
+      while ($s1 !== $this->peg_FAILED) {
+        $s0[] = $s1;
+        $s1 = $this->peg_parsewhitespace();
       }
 
       return $s0;
@@ -2603,7 +2608,7 @@ class Parser{
 
     private function peg_parsewhitespaces() {
 
-      $s0 = $this->peg_c11;
+      $s0 = $this->peg_c12;
       $s1 = $this->peg_parsewhitespace();
       while ($s1 !== $this->peg_FAILED) {
         $s0[] = $s1;
@@ -2615,12 +2620,12 @@ class Parser{
 
     private function peg_parsenl() {
 
-      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c129) {
-        $s0 = $this->peg_c129;
+      if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c127) {
+        $s0 = $this->peg_c127;
         $this->peg_currPos++;
       } else {
         $s0 = $this->peg_FAILED;
-        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c130); }
+        if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c128); }
       }
       if ($s0 === $this->peg_FAILED) {
         if (mb_substr($this->input, $this->peg_currPos, 2, "UTF-8") === $this->peg_c69) {
@@ -2631,20 +2636,20 @@ class Parser{
           if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c70); }
         }
         if ($s0 === $this->peg_FAILED) {
-          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c131) {
-            $s0 = $this->peg_c131;
+          if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c129) {
+            $s0 = $this->peg_c129;
             $this->peg_currPos++;
           } else {
             $s0 = $this->peg_FAILED;
-            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c132); }
+            if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c130); }
           }
           if ($s0 === $this->peg_FAILED) {
-            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c133) {
-              $s0 = $this->peg_c133;
+            if (mb_substr($this->input, $this->peg_currPos, 1, "UTF-8") === $this->peg_c131) {
+              $s0 = $this->peg_c131;
               $this->peg_currPos++;
             } else {
               $s0 = $this->peg_FAILED;
-              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c134); }
+              if ($this->peg_silentFails === 0) { $this->peg_fail($this->peg_c132); }
             }
           }
         }
@@ -2663,35 +2668,52 @@ class Parser{
 
     $this->peg_FAILED = new \stdClass;
     $this->peg_c0 = $this->peg_FAILED;
-    $this->peg_c1 = "/";
-    $this->peg_c2 = array( "type" => "literal", "value" => "/", "description" => "\"/\"" );
-    $this->peg_c3 = null;
-    $this->peg_c4 = "[";
-    $this->peg_c5 = array( "type" => "literal", "value" => "[", "description" => "\"[\"" );
-    $this->peg_c6 = "]";
-    $this->peg_c7 = array( "type" => "literal", "value" => "]", "description" => "\"]\"" );
-    $this->peg_c8 = function($segment,$ids,$functions,$fields,$conditions) { return array( "name" => $segment, "type" => 'Segment', "ids" => $ids? $ids[1] : null, "functions" => $functions, "fields" => $fields, "conditions" => $conditions ); };
-    $this->peg_c9 = "?";
-    $this->peg_c10 = array( "type" => "literal", "value" => "?", "description" => "\"?\"" );
-    $this->peg_c11 = array();
-    $this->peg_c12 = "&";
-    $this->peg_c13 = array( "type" => "literal", "value" => "&", "description" => "\"&\"" );
-    $this->peg_c14 = function($first,$rest) { return buildList($first, $rest, 1); };
-    $this->peg_c15 = function($left,$operator,$right) { return array( "left" => $left, "operator" => $operator, "right" => "right" ); };
-    $this->peg_c16 = "{";
-    $this->peg_c17 = array( "type" => "literal", "value" => "{", "description" => "\"{\"" );
-    $this->peg_c18 = "}";
-    $this->peg_c19 = array( "type" => "literal", "value" => "}", "description" => "\"}\"" );
-    $this->peg_c20 = function($fields) { return $fields; };
-    $this->peg_c21 = ".";
-    $this->peg_c22 = array( "type" => "literal", "value" => ".", "description" => "\".\"" );
-    $this->peg_c23 = function($functions) { return extractList($functions, 1); };
-    $this->peg_c24 = "sort";
-    $this->peg_c25 = array( "type" => "literal", "value" => "sort", "description" => "\"sort\"" );
-    $this->peg_c26 = "(";
-    $this->peg_c27 = array( "type" => "literal", "value" => "(", "description" => "\"(\"" );
-    $this->peg_c28 = ")";
-    $this->peg_c29 = array( "type" => "literal", "value" => ")", "description" => "\")\"" );
+    $this->peg_c1 = ".";
+    $this->peg_c2 = array( "type" => "literal", "value" => ".", "description" => "\".\"" );
+    $this->peg_c3 = "(";
+    $this->peg_c4 = array( "type" => "literal", "value" => "(", "description" => "\"(\"" );
+    $this->peg_c5 = null;
+    $this->peg_c6 = ")";
+    $this->peg_c7 = array( "type" => "literal", "value" => ")", "description" => "\")\"" );
+    $this->peg_c8 = "sort";
+    $this->peg_c9 = array( "type" => "literal", "value" => "sort", "description" => "\"sort\"" );
+    $this->peg_c10 = "/";
+    $this->peg_c11 = array( "type" => "literal", "value" => "/", "description" => "\"/\"" );
+    $this->peg_c12 = array();
+    $this->peg_c13 = "[";
+    $this->peg_c14 = array( "type" => "literal", "value" => "[", "description" => "\"[\"" );
+    $this->peg_c15 = "]";
+    $this->peg_c16 = array( "type" => "literal", "value" => "]", "description" => "\"]\"" );
+    $this->peg_c17 = function($segment,$segment_right,$ids,$fields,$conditions) {
+        $functions = array();
+        $item = NULL;
+        while($item = array_pop($segment_right)) {
+          if ($item[2] == "(") {
+            $functions[] = array("type" => "Function", "name" => $item[1], "params" => $item[3]);
+          } else {
+            $segment += "." + $item[1];
+          }
+        }
+        return array(
+          "name" => $segment,
+          "type" => 'Segment',
+          "ids" => $ids? $ids[1] : null,
+          "functions" => $functions,
+          "fields" => $fields,
+          "conditions" => $conditions );
+      };
+    $this->peg_c18 = "?";
+    $this->peg_c19 = array( "type" => "literal", "value" => "?", "description" => "\"?\"" );
+    $this->peg_c20 = "&";
+    $this->peg_c21 = array( "type" => "literal", "value" => "&", "description" => "\"&\"" );
+    $this->peg_c22 = function($first,$rest) { return buildList($first, $rest, 1); };
+    $this->peg_c23 = function($left,$operator,$right) { return array( "left" => $left, "operator" => $operator, "right" => "right" ); };
+    $this->peg_c24 = "{";
+    $this->peg_c25 = array( "type" => "literal", "value" => "{", "description" => "\"{\"" );
+    $this->peg_c26 = "}";
+    $this->peg_c27 = array( "type" => "literal", "value" => "}", "description" => "\"}\"" );
+    $this->peg_c28 = function($fields) { return $fields; };
+    $this->peg_c29 = function($functions) { return extractList($functions, 1); };
     $this->peg_c30 = function($name,$params) { return array( "type" => 'Function', "name" => $name, "arguments" => $params ); };
     $this->peg_c31 = "-";
     $this->peg_c32 = array( "type" => "literal", "value" => "-", "description" => "\"-\"" );
@@ -2804,26 +2826,24 @@ class Parser{
     $this->peg_c114 = array( "type" => "class", "value" => "[+\\-]", "description" => "[+\\-]" );
     $this->peg_c115 = "/^[0-9]/";
     $this->peg_c116 = array( "type" => "class", "value" => "[0-9]", "description" => "[0-9]" );
-    $this->peg_c117 = "e";
-    $this->peg_c118 = array( "type" => "literal", "value" => "e", "description" => "\"e\"" );
-    $this->peg_c119 = function() {
-          return parseFloat(text());
+    $this->peg_c117 = function($parts) {
+          return floatval($parts);
         };
-    $this->peg_c120 = "/^[eE]/";
-    $this->peg_c121 = array( "type" => "class", "value" => "[eE]", "description" => "[eE]" );
-    $this->peg_c122 = "/^[1-9]/";
-    $this->peg_c123 = array( "type" => "class", "value" => "[1-9]", "description" => "[1-9]" );
-    $this->peg_c124 = "/^[0-9a-fA-F]/";
-    $this->peg_c125 = array( "type" => "class", "value" => "[0-9a-fA-F]", "description" => "[0-9a-fA-F]" );
-    $this->peg_c126 = array("type" => "other", "description" => "whitespace" );
-    $this->peg_c127 = "/^[ \\t\\n\\r]/";
-    $this->peg_c128 = array( "type" => "class", "value" => "[ \\t\\n\\r]", "description" => "[ \\t\\n\\r]" );
-    $this->peg_c129 = "\n";
-    $this->peg_c130 = array( "type" => "literal", "value" => "\n", "description" => "\"\\n\"" );
-    $this->peg_c131 = "\r";
-    $this->peg_c132 = array( "type" => "literal", "value" => "\r", "description" => "\"\\r\"" );
-    $this->peg_c133 = "\f";
-    $this->peg_c134 = array( "type" => "literal", "value" => "\f", "description" => "\"\\f\"" );
+    $this->peg_c118 = "/^[eE]/";
+    $this->peg_c119 = array( "type" => "class", "value" => "[eE]", "description" => "[eE]" );
+    $this->peg_c120 = "/^[1-9]/";
+    $this->peg_c121 = array( "type" => "class", "value" => "[1-9]", "description" => "[1-9]" );
+    $this->peg_c122 = "/^[0-9a-fA-F]/";
+    $this->peg_c123 = array( "type" => "class", "value" => "[0-9a-fA-F]", "description" => "[0-9a-fA-F]" );
+    $this->peg_c124 = array("type" => "other", "description" => "whitespace" );
+    $this->peg_c125 = "/^[ \\t\\n\\r]/";
+    $this->peg_c126 = array( "type" => "class", "value" => "[ \\t\\n\\r]", "description" => "[ \\t\\n\\r]" );
+    $this->peg_c127 = "\n";
+    $this->peg_c128 = array( "type" => "literal", "value" => "\n", "description" => "\"\\n\"" );
+    $this->peg_c129 = "\r";
+    $this->peg_c130 = array( "type" => "literal", "value" => "\r", "description" => "\"\\r\"" );
+    $this->peg_c131 = "\f";
+    $this->peg_c132 = array( "type" => "literal", "value" => "\f", "description" => "\"\\f\"" );
 
     $peg_startRuleFunctions = array( 'start' => array($this, "peg_parsestart") );
     $peg_startRuleFunction  = array($this, "peg_parsestart");

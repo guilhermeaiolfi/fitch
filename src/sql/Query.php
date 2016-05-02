@@ -10,6 +10,7 @@ class Query {
   protected $fields = array();
   protected $sort_by = array();
   protected $aliases = array();
+  protected $limit = NULL;
 
   public function getRoot() {
     return $this->root;
@@ -107,7 +108,7 @@ class Query {
       }
     }
 
-//print_r($select_fields);
+    //print_r($select_fields);
     $sql .= (empty($fields)? "*" : implode(", ", $select_fields)) . " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
 
     foreach ($this->getJoins() as $join) {
@@ -123,6 +124,11 @@ class Query {
       $sql .= $i? ", " : "";
       $sql .= $sort_by[$i]["column"] . " " . ($sort_by[$i]["direction"] == "+"? "ASC" : "DESC");
     }
+
+    if (is_array($this->limit)) {
+      $sql .= " LIMIT " . join(",", $this->limit);
+    }
+
     return $sql;
   }
 
@@ -130,9 +136,12 @@ class Query {
     $this->sort_by[] = $sort;
   }
 
+  function limit($limit, $offset) {
+    $this->limit = array($limit, $offset);
+  }
+
   function getAliasFor($node) {
     $table = "";
-
     if ($node instanceof Segment) {
       if ($node->hasDot()) {
         $parts = $node->getParts();
@@ -141,20 +150,7 @@ class Query {
         $table = $node->getName();
       }
     } else if ($node instanceof Field) {
-      $parent = $node->getParent();
-      if ($node->hasDot()) {
-        $parent = $node;
-      }
-      if ($parent->hasDot()) {
-        $parts = $parent->getParts();
-        if ($parent instanceof Segment) {
-          $table = $parts[count($parts) - 1];
-        } else {
-          $table = $parts[count($parts) - 2];
-        }
-      } else {
-        $table = $parent->getName();
-      }
+      $table = $node->getParent()->getName();
       $node = $node->getParent();
     } else if ($node instanceof \fitch\Join) {
 
@@ -167,7 +163,7 @@ class Query {
 
       $aliases[] = $this->registerAliasFor($table, $relation);
       return $aliases;
-    } else {
+    } else { //relation
       $table = $node->getTable();
     }
     return $this->registerAliasFor($table, $node);

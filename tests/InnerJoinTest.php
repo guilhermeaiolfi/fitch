@@ -6,11 +6,12 @@ error_reporting(E_ALL ^ E_NOTICE);
 class InnerJoinTest extends PHPUnit_Framework_TestCase
 {
 
-
-
   protected $meta = array(
     "schools" => array(
-      "fields" => array("id", "name")
+      "fields" => array(
+        array("name" => "id"),
+        array("name" => "name")
+      )
     ),
     "users" => array(
       "fields" => array("id", "name")
@@ -40,7 +41,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  /*public function testNoFields()
+  public function testNoFields()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -55,7 +56,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($segment);
+    $segment = new \fitch\fields\Segment($meta, $segment);
 
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -64,17 +65,18 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
 
     $nested = $populator->getResult($rows);
-    print_r($nested);exit;
+    //print_r($nested);exit;
 
     $result = array (
       "schools" => array (
-        0 => array("name" => "School #1", "id" => 1, "departments.id" => array (0 => 1, 1 => 2)),
-        1 => array("name" => "School #2", "id" => 2, "departments.id" => array (0 => 1))
+        0 => array("id" => 1, "name" => "School #1"),
+        1 => array("id" => 2, "name" => "School #2")
       )
     );
 
     $this->assertEquals($result, $nested);
-  }*/
+  }
+
 
   public function testSimpleJoin()
   {

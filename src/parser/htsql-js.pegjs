@@ -15,11 +15,33 @@
 }
 
 start
-  = Segment
+  = SegmentBlock
   / FieldBlock
 
-Segment
-  = segment:"/" segment:DottedIdentifier ids:("[" LocatorList "]")? functions:FunctionList? whitespaces? fields:FieldBlock? conditions:ConditionList? { return { name: segment, type: 'Segment', ids: ids? ids[1] : null, functions: functions, fields: fields, conditions: conditions }; }
+SegmentExtra
+  = "." Identifier "(" ArgumentList? ")"
+  / "." Identifier
+
+SegmentBlock
+  = segment:"/" segment:Identifier segment_right:SegmentExtra* ids:("[" LocatorList "]")? whitespaces? fields:FieldBlock? conditions:ConditionList? {
+  var functions = [], item;
+  while(item = segment_right.pop()) {
+    if (item[2] == "(") {
+      functions.push({ name: item[1], params: item[3]});
+    } else {
+      segment += "." + item[1];
+    }
+  }
+  return {
+    name: segment,
+    type: 'Segment',
+    functions: functions,
+    ids: ids? ids[1] : null,
+    fields: fields,
+    conditions: conditions
+  };
+}
+
 
 ConditionList
   = "?" first:Condition rest:("&" Condition)* { return buildList(first, rest, 1); }
@@ -56,7 +78,7 @@ SortList
      }
 
 ArgumentList
-  = first:Locator rest:(whitespaces? "," whitespaces?)* {
+  = first:Locator rest:(__ "," __ Locator __)* {
        return buildList(first, rest, 3);
      }
 
@@ -79,7 +101,7 @@ Field
     }
     return result;
   }
-  / Segment
+  / SegmentBlock
 
 
 DottedIdentifier
@@ -218,6 +240,9 @@ _ "whitespace"
 // conventional definition consistent with ECMA-262, 5th ed.
 whitespace
   = [ \t\n\r]
+
+__
+  = whitespace*
 
 whitespaces
   = whitespace*

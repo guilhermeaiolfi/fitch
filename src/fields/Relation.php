@@ -7,6 +7,16 @@ use \fitch\Join as Join;
 class Relation extends \fitch\fields\Field {
   public function __construct($meta, $data = null) {
     parent::__construct($meta, $data);
+    if (count($this->children) == 0) {
+      $fields = $meta->getFields($this->getRelationName());
+      if (is_array($fields)) {
+        foreach($fields as $field) {
+          $field = new Field($meta, is_array($field)? $field : array("name" => $field));
+          $field->setParent($this);
+          $this->addChild($field);
+        }
+      }
+    }
     $this->createHashField();
   }
   protected function createHashField() {

@@ -128,8 +128,7 @@ class ArrayHydration {
     $pending = $mapping;
     // print_r($mapping);exit;
     $arr = &$result;
-    $level = array();
-
+    $relations = array();
     $ids = array();
 
     while ($node = array_shift($pending)) {
@@ -159,11 +158,10 @@ class ArrayHydration {
 
         $arr = &$arr[$name][$line];
 
-        $level[] = array("_pointer" => &$arr, "_relation" => $node);
+        $relations[] = array("_pointer" => &$arr, "_relation" => $node);
 
       } elseif ($node["_type"] == "field") {
-        $this->setFieldValue($level[$node["_level"]], $row, $node);
-      } elseif ($node["_type"] == "primary_key") {
+        $this->setFieldValue($relations[$node["_level"]], $row, $node);
       }
     }
   }

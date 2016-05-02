@@ -34,12 +34,18 @@ class Segment extends Relation {
       $function = $data["functions"][$i];
       if ($function["name"] == "sort") {
         $this->functions["sort"] = array();
-        for($y = 0; $y < count($function["arguments"]); $y++) {
+        for($y = 0; $y < count($function["params"]); $y++) {
            $this->functions["sort"][] = array (
-            "column" => $function["arguments"][$y][0],
-            "direction" => $function["arguments"][$y][1]
+            "column" => $function["params"][$y][0],
+            "direction" => $function["params"][$y][1]
           );
         }
+      }
+      if ($function["name"] == "limit") {
+        $this->functions["limit"] = array (
+            "limit" => $function["params"][0],
+            "offset" => $function["params"][1]
+        );
       }
     }
   }
