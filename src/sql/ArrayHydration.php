@@ -18,23 +18,6 @@ class ArrayHydration {
     $this->meta = $meta;
   }
 
-  public function getColumnIndexForPK($field, $root) {
-    $nodes = $root->getListOf("\\fitch\\fields\\Field");
-    $i = 0;
-    foreach ($nodes as $node) {
-      if ($node->getParent() == $field && $node->getName() == "id") { return $i; }
-      if ($node instanceof Relation) {
-        if (!$field->hasPrimaryKey()) {
-          $i++;
-        }
-      } else {
-        $i++;
-      }
-      $a++;
-    }
-    return -1;
-  }
-
   public function getMapping() {
     $meta = $this->meta;
     $root = $this->segment;
@@ -49,45 +32,38 @@ class ArrayHydration {
         foreach($field->getChildren() as $child) {
           $pending[] = $child;
         }
+        continue;
       } else if (is_a($field, "\\fitch\\fields\\Relation")) {
         $pointer[$alias] = array();
         $pointer = &$pointer[$alias];
         $pointer["_name"] = $alias;
         $pointer["_type"] = "relation";
         $pointer["_leaf"] = false;
-        $pointer["_many"] = $field == $this->segment || $meta->isManyToManyRelation($field->getRelationName())? true : false;
+        $pointer["_many"] = $field->isMany();
         foreach($field->getChildren() as $child) {
           $pending[] = $child;
         }
-        $id_column_index = $this->getColumnIndexForPK($field, $root);
-        $generated = $id_column_index == -1;
-        if ($generated) {
-          $id_column_index = $i++;
-        }
-        $pointer["_id"] = array("_name" => "_id", "_column_index" =>  $id_column_index, "_generated" => $generated, "_type" => "primary_key");
+        $pointer["_id"] = array("_name" => "_id", "_column_index" =>  $field->getPkIndex(), "_generated" => $generated, "_type" => "primary_key");
         $pointer["_children"] = array();
         $pointer = &$pointer['_children'];
-      } else {
+      } else if ($field->isVisible()) {
         $pointer[$alias] = array();
         $name = $field->getName();
         if ($field->getParent() instanceof SoftRelation)  {
-          $id_column_index = $this->getColumnIndexForPK($field->getParent(), $root);
-          $generated = $id_column_index == -1;
-          if ($generated) {
-            $id_column_index = $i++;
-          }
-          $pointer[$alias]["_id"] = array("_name" => "_id", "_column_index" => $id_column_index, "_generated" => $generated, "_type" => "primary_key");
+          $pointer[$alias]["_id"] = array("_name" => "_id", "_column_index" => $field->getParent()->getPkIndex(), "_generated" => $generated, "_type" => "primary_key");
         }
         $pointer[$alias]["_name"] = $alias;
         $pointer[$alias]["_leaf"] = true;
         $pointer[$alias]["_type"] = "field";
         $pointer[$alias]["_level"] = $field->getLevel();
-        $pointer[$alias]["_many"] = $meta->isManyToManyRelation($field->getRelationName());
+        $pointer[$alias]["_many"] = $field->isMany();
         $pointer[$alias]["_column_index"] = $i;
-
+        $i++;
+      } else {
         $i++;
       }
     }
+    // print_r($mapping);exit;
     return $mapping;
   }
   public function getResult($rows) {
@@ -150,6 +126,7 @@ class ArrayHydration {
 
   public function populateRow(&$result, $row, $mapping) {
     $pending = $mapping;
+    // print_r($mapping);exit;
     $arr = &$result;
     $level = array();
 

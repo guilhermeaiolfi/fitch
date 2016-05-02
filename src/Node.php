@@ -8,21 +8,37 @@ use \fitch\fields\SoftRelation as SoftRelation;
 use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class Node {
-
   protected $children = array();
-
   protected $name = null;
-
   protected $parent = null;
-
+  protected $meta = null;
   protected $alias = null;
+  protected $visible = true;
+
+  public function setVisible($visible) {
+    $this->visible = $visible;
+  }
+
+  public function isVisible() {
+    return $this->visible;
+  }
 
   public function getChildren() {
     return $this->children;
   }
+
   public function setChildren($children) {
     $this->children = $children;
   }
+
+  public function getMeta() {
+    return $this->meta;
+  }
+
+  public function setMeta($meta) {
+    $this->meta = $meta;
+  }
+
   public function getChildByName($name, $parent) {
     foreach ($this->children as $child) {
       if ($name == $child->getName() && $parent == $child->getParent()) {
@@ -40,9 +56,11 @@ class Node {
   public function getAlias() {
     return $this->alias;
   }
+
   public function getAliasOrName() {
     return isset($this->alias)? $this->alias : $this->name;
   }
+
   public function setAlias($alias) {
     $this->alias = $alias;
   }
@@ -60,6 +78,7 @@ class Node {
     }
     return null;
   }
+
   public function getParents($type = null) {
     $arr = array();
     $current = $this;
@@ -83,8 +102,8 @@ class Node {
     return $this->name;
   }
 
-
-  public function __construct($data = null) {
+  public function __construct($meta, $data = null) {
+    $this->setMeta($meta);
     @$this->setName($data["name"]);
     @$this->setAlias($data["alias"]);
     if (isset($data["fields"]) && is_array($data["fields"])) {
@@ -99,12 +118,12 @@ class Node {
             $field["fields"] = array($child);
             unset($parts[$n - 1]);
             $field["name"] = join(".", $parts);
-            $obj = new SoftRelation($field);
+            $obj = new SoftRelation($meta, $field);
           } else {
-            $obj = new Field($field);
+            $obj = new Field($meta, $field);
           }
         } else {
-          $obj = new Relation($field);
+          $obj = new Relation($meta, $field);
         }
         $obj->setParent($this);
         $this->addChild($obj);

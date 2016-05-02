@@ -97,11 +97,6 @@ class Query {
     $select_fields = array();
     for ($i = 0; $i < count($fields); $i++) {
       $field = $fields[$i];
-      if ($field instanceof \fitch\fields\PrimaryKeyHash) {
-        if ($field->getField()) {
-          continue;
-        }
-      }
       if (!$field->hasDot()) {
         $alias = $this->getAliasFor($field);
         $select_fields[] = $alias . "." . $field->getName();
@@ -112,6 +107,7 @@ class Query {
       }
     }
 
+//print_r($select_fields);
     $sql .= (empty($fields)? "*" : implode(", ", $select_fields)) . " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
 
     foreach ($this->getJoins() as $join) {

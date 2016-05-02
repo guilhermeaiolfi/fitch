@@ -26,8 +26,9 @@ class Segment extends Relation {
     }
     return $joins;
   }
-  public function __construct ($data = null) {
-    parent::__construct($data);
+  public function __construct ($meta, $data = null) {
+    parent::__construct($meta, $data);
+
     for($i = 0; $i < count($data["functions"]); $i++) {
 
       $function = $data["functions"][$i];

@@ -10,20 +10,6 @@ use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class SqlGenerator extends Generator {
 
-  public function createHashField($relation) {
-    $primary_key_field = new PrimaryKeyHash(array('alias' => $relation->getName() . "_" . "id"));
-    $primary_key_field->setPrimaryKey(array("id"));
-    $keys = $this->meta->getPrimaryKey($this->meta->getTableNameFromRelation($relation->getRelationName()));
-    $primary_key_field->setParent($relation);
-    $fields = $relation->getListOf("\\fitch\\fields\\Field");
-    foreach ($fields as $field) {
-      if ($field->getName() == "id") {
-        $primary_key_field->setField($field);
-        break;
-      }
-    }
-    return $primary_key_field;
-  }
   public function getQueries() {
     $root = $this->getRoot();
 
@@ -46,7 +32,7 @@ class SqlGenerator extends Generator {
           $query->addJoin($join);
         }
 
-        $query->addField($this->createHashField($field));
+        //$query->addField($this->createHashField($field));
 
         $children = $field->getChildren();
 
@@ -57,7 +43,7 @@ class SqlGenerator extends Generator {
         foreach ($field->getJoins() as $join) {
           $query->addJoin($join);
         }
-        $query->addField($this->createHashField($field));
+        //$query->addField($this->createHashField($field));
 
         $children = $field->getChildren();
 
@@ -72,7 +58,7 @@ class SqlGenerator extends Generator {
           foreach ($relation->getJoins() as $join) {
             $query->addJoin($join);
           }
-          $query->addField($this->createHashField($relation));
+          //$query->addField($this->createHashField($relation));
           //$field->setParent($relation);
           $query->addField($field);
         }

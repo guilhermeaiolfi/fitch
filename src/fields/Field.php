@@ -8,6 +8,10 @@ use \fitch\fields\SoftRelation as SoftRelation;
 class Field extends Node {
   protected $generate = false;
 
+  public function isMany() {
+    return !$this->getParent() || $this->getMeta()->isManyToManyRelation($this->getRelationName());
+  }
+
   public function setGenerated($b) {
     $this->generated = $b;
   }

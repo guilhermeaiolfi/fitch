@@ -92,8 +92,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, id, departments.id}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($segment);
-    //print_r($segment);exit;
+    $segment = new \fitch\fields\Segment($meta, $segment);
+    // print_r($segment);exit;
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
@@ -129,7 +129,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, id, departments{id}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($segment);
+    $segment = new \fitch\fields\Segment($meta, $segment);
     //print_r($segment);exit;
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
