@@ -55,6 +55,7 @@ class Query {
     }
     return $this->getOneToManyJoin($join, $meta);
   }
+
   public function getManyToManyJoin($join, $meta) {
 
     $joins = array();
@@ -108,8 +109,8 @@ class Query {
       }
     }
 
-    //print_r($select_fields);
-    $sql .= (empty($fields)? "*" : implode(", ", $select_fields)) . " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
+    $sql .= implode(", ", $select_fields);
+    $sql .= " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
 
     foreach ($this->getJoins() as $join) {
       $sql .= $this->getJoinSql($join, $meta);

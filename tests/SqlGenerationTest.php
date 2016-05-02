@@ -152,6 +152,29 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       )
     );
 
+    $tests["unordered columns in multi-level query"] = array(
+      "token" => array(
+        "name" => "schools",
+        "type" => "Segment",
+        "fields" => array(
+          array("name" => "id"),
+          array(
+            "name" => "departments.name",
+            "alias" => "department_name"
+          ),
+          array("name" => "name"),
+        )
+      ),
+      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
+      "result" => array(
+        "schools" => array(
+          0 => array("id" => 1, "department_name" => array(0 => "Department #1", 1 => "Department #2"), "name" => "School #1"),
+          1 => array("id" => 2, "department_name" => array(0 => "Department #1"),
+"name" => "School #2")
+        )
+      )
+    );
+
     $meta = $this->meta;
 
 
@@ -163,20 +186,19 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
               array(1, "School #1", 2, "Department #2")
             );
 
-    foreach ($tests as $test) {
+    foreach ($tests as $key => $test) {
       $segment = new \fitch\fields\Segment($meta, $test["token"]);
       $generator = new \fitch\sql\SqlGenerator($segment, $meta);
       $queries = $generator->getQueries();
       $sql = $queries[0]->getSql($meta);
 
 
-      $this->assertEquals($test["sql"], $sql);
+      $this->assertEquals($test["sql"], $sql, "SQL in OK in $key");
 
       $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
 
       $nested = $populator->getResult($rows);
-      //print_r($nested);exit;
-      $this->assertEquals($test["result"], $nested);
+      $this->assertEquals($test["result"], $nested, "JSON result are OK in $key");
     }
   }
 

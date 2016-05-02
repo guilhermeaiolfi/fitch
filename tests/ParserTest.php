@@ -4,17 +4,14 @@ use \fitch\parser\Parser as Parser;
 error_reporting(E_ALL ^ E_NOTICE);
 class ParserTest extends PHPUnit_Framework_TestCase
 {
-
-
   public function testParser()
   {
     try
     {
         $parser = new Parser;
         $result = $parser->parse("/school");
-        //var_dump($result);exit;
         $expected = array(
-          "name"=> 0,
+          "name"=> "school",
           "type"=> "Segment",
           "ids" => NULL,
           "functions"=> array(),
