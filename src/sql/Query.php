@@ -112,12 +112,19 @@ class Query {
     } else {
       $parts = explode(".", $column);
       $alias = $this->registerAliasFor($parts[0], $this->getRelationByRelationName($parts[0]));
-      //print_r($alias);exit;
       if (!$alias) {
         throw new Exception("Alias not found for " . $parts[0], 1);
-
       }
       $column = $parts[1];
+    }
+    if ($operator == "~") {
+      return $alias . "." . $column . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+    }
+    if ($operator == "!=") {
+      return $alias . "." . $column . " <> " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+    }
+    if ($operator == "~") {
+      return $alias . "." . $column . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
     }
     return $alias . "." . $column . " " . $operator . " " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
   }
