@@ -23,7 +23,7 @@ SegmentExtra
   / "." Identifier
 
 SegmentBlock
-  = segment:"/" segment:Identifier segment_right:SegmentExtra* ids:("[" LocatorList "]")? whitespaces? fields:FieldBlock? conditions:ConditionList? {
+  = segment:"/" segment:Identifier segment_right:SegmentExtra* ids:("[" LocatorList "]")? __ fields:FieldBlock? conditions:ConditionBlock {
   var functions = [], item;
   while(item = segment_right.pop()) {
     if (item[2] == "(") {
@@ -42,9 +42,30 @@ SegmentBlock
   };
 }
 
+ConditionBlock
+  = "?" expr:ConditionExpression { return expr; }
+  / "?" expr:ConditionExpression?
 
-ConditionList
-  = "?" first:Condition rest:("&" Condition)* { return buildList(first, rest, 1); }
+ConditionJoin
+ = "&"
+ / "|"
+
+ConditionExpression
+  = head:ConditionTerm tail:(ConditionJoin ConditionTerm)* {
+     var result = [head], i;
+
+    for (i = 0; i < tail.length; i++) {
+      result.push(tail[i][0]);
+      result.push(tail[i][1]);
+    }
+    return result;
+  }
+
+ConditionTerm
+   = "(" __ expr:ConditionExpression __ ")" {
+    return expr;
+  }
+  / Condition
 
 Condition
   = left:DottedIdentifier operator:Operator right:Value { return { left: left, operator: operator, right: right } }
@@ -121,7 +142,11 @@ ColumnIdentifier
 
 Operator
   = "="
-  / "=~"
+  / "~"
+  / "!="
+  / ">="
+  / "<="
+  / "!~"
 
 varstart
   = [_a-z]i

@@ -20,6 +20,8 @@ class SqlGenerator extends Generator {
     $query->setRoot($root);
     $fields[] = $root;
 
+    $query->setConditions($root->getConditions());
+
     while ($field = array_shift($fields)) {
       if ($field instanceof Relation) {
         foreach ($field->getJoins() as $join) {

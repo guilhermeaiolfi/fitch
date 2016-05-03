@@ -6,12 +6,20 @@ use \fitch\fields\Relation as Relation;
 
 class Segment extends Relation {
   protected $functions = array();
+  protected $conditions = NULL;
+
   public function getFunctions() {
     return $this->functions;
   }
+
   public function getFunction($name) {
     return $this->functions[$name];
   }
+
+  public function getConditions() {
+    return $this->conditions;
+  }
+
   public function getJoins() {
     // TODO: support multi level JOINs: school.department.another_table
     $joins = array();
@@ -26,9 +34,11 @@ class Segment extends Relation {
     }
     return $joins;
   }
+
   public function __construct ($meta, $data = null) {
     parent::__construct($meta, $data);
 
+    $this->conditions = $data["conditions"];
     for($i = 0; $i < count($data["functions"]); $i++) {
 
       $function = $data["functions"][$i];

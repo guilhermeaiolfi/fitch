@@ -175,6 +175,69 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       )
     );
 
+    $tests["conditions"] = array(
+      "token" => array(
+        "name" => "schools",
+        "type" => "Segment",
+        "conditions" => array(
+          array("left" => "id", "operator" => "=", "right" => 12)
+        )
+      ),
+      "sql" => "SELECT schools_0.id, schools_0.name FROM schools AS schools_0 WHERE schools_0.id = 12"
+    );
+    $tests["condition with AND"] = array(
+      "token" => array(
+        "name" => "schools",
+        "type" => "Segment",
+        "conditions" => array(
+          array("left" => "id", "operator" => "=", "right" => 12),
+          "&",
+          array("left" => "name", "operator" => "=", "right" => "guilherme"),
+        )
+      ),
+      "sql" => "SELECT schools_0.id, schools_0.name FROM schools AS schools_0 WHERE schools_0.id = 12 AND schools_0.name = \\\"guilherme\\\""
+    );
+
+    $tests["conditions with parenthesis"] = array(
+      "token" => array(
+        "name" => "schools",
+        "type" => "Segment",
+        "conditions" => array(
+          array("left" => "id", "operator" => "=", "right" => 1),
+          "&",
+          array(
+            array("left" => "id", "operator" => "=", "right" => 2),
+            "|",
+            array("left" => "id", "operator" => "=", "right" => 3)
+          )
+        )
+      ),
+      "sql" => "SELECT schools_0.id, schools_0.name FROM schools AS schools_0 WHERE schools_0.id = 1 AND (schools_0.id = 2 OR schools_0.id = 3)"
+    );
+
+    $tests["conditions in relations"] = array(
+      "token" => array(
+        "name" => "schools",
+        "type" => "Segment",
+        "fields" => array(
+          array("name" => "id"),
+          array("name" => "departments.id"),
+          array("name" => "name"),
+        ),
+        "conditions" => array(
+          array("left" => "departments.id", "operator" => "=", "right" => 1),
+          "&",
+          array(
+            array("left" => "departments.id", "operator" => "=", "right" => 2),
+            "|",
+            array("left" => "departments.id", "operator" => "=", "right" => 3)
+          )
+        )
+      ),
+      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) WHERE departments_0.id = 1 AND (departments_0.id = 2 OR departments_0.id = 3)",
+    );
+
+
     $meta = $this->meta;
 
 
@@ -198,7 +261,9 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
 
       $nested = $populator->getResult($rows);
-      $this->assertEquals($test["result"], $nested, "JSON result are OK in $key");
+      if ($test["result"]) {
+        $this->assertEquals($test["result"], $nested, "JSON result are OK in $key");
+      }
     }
   }
 

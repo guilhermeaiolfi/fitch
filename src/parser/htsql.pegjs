@@ -32,7 +32,7 @@ SegmentExtra
 
 
 Segment
-  = segment:"/" segment:Identifier segment_right:SegmentExtra* ids:("[" LocatorList "]")? __ fields:FieldBlock? conditions:ConditionList? {
+  = segment:"/" segment:Identifier segment_right:SegmentExtra* ids:("[" LocatorList "]")? __ fields:FieldBlock? conditions:ConditionBlock {
     $functions = array();
     $item = NULL;
     while($item = array_pop($segment_right)) {
@@ -51,8 +51,30 @@ Segment
       "conditions" => $conditions );
   }
 
-ConditionList
-  = "?" first:Condition rest:("&" Condition)* { return buildList($first, $rest, 1); }
+ConditionBlock
+  = "?" expr:ConditionExpression { return expr; }
+  / ("?" expr:ConditionExpression)?
+
+ConditionJoin
+ = "&"
+ / "|"
+
+ConditionExpression
+  = head:ConditionTerm tail:(ConditionJoin ConditionTerm)* {
+     $result = array($head);
+
+    for ($i = 0; $i < $tail.length; $i++) {
+      $result[] = $tail[$i][0];
+      $result[] = $tail[$i][1];
+    }
+    return $result;
+  }
+
+ConditionTerm
+   = "(" __ expr:ConditionExpression __ ")" {
+    return $expr;
+  }
+  / Condition
 
 Condition
   = left:DottedIdentifier operator:Operator right:Value { return array( "left" => $left, "operator" => $operator, "right" => "right" ); }
@@ -129,7 +151,11 @@ ColumnIdentifier
 
 Operator
   = "="
-  / "=~"
+  / "~"
+  / "!="
+  / ">="
+  / "<="
+  / "!~"
 
 varstart
   = [_a-z]i
