@@ -10,17 +10,15 @@ use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class SqlGenerator extends Generator {
 
-  public function getQueries() {
-    $root = $this->getRoot();
-    $queries = array();
+  public function generateQueryForSegment($segment) {
     $joins = array();
     $meta = $this->getMeta();
 
-    $queries[] = $query = new Query();
-    $query->setRoot($root);
-    $fields[] = $root;
+    $query = new Query();
+    $query->setRoot($segment);
+    $fields[] = $segment;
 
-    $query->setConditions($root->getConditions());
+    $query->setConditions($segment->getConditions());
 
     while ($field = array_shift($fields)) {
       if ($field instanceof Relation) {
@@ -37,14 +35,21 @@ class SqlGenerator extends Generator {
         $query->addField($field);
       }
     }
-    $function = $root->getFunction("sort");
+    $function = $segment->getFunction("sort");
     for($i = 0; $i < count($function); $i++) {
       $query->addSortBy($function[$i]);
     }
-    if ($function = $root->getFunction("limit")) {
+    if ($function = $segment->getFunction("limit")) {
       $query->limit($function["limit"], $function["offset"]);
     }
 
+    return $query;
+  }
+
+  public function getQueries() {
+    $root = $this->getRoot();
+    $queries = array();
+    $queries[] = $this->generateQueryForSegment($root);
     return $queries;
   }
 }
