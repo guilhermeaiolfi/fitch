@@ -3,6 +3,7 @@
 namespace fitch\sql;
 
 use \fitch\Fields\Field as Field;
+use \fitch\Fields\Relation as Relation;
 use \fitch\Fields\Segment as Segment;
 
 class Query {
@@ -66,13 +67,16 @@ class Query {
     $joins = array();
     $first = true;
 
+    $aliases = $this->getAliasFor($join);
+
     foreach ($meta as $left => $right) {
       list($left_table, $left_field) = explode(".", $left);
       list($right_table, $right_field) = explode(".", $right);
 
-      $aliases = $this->getAliasFor($join);
       if ($first) {
-        $joins[] = " " . $join->getType() . " JOIN $right_table " . $aliases[0] . " ON (" . $aliases[0] . "." . $right_field . " = " . $this->getAliasFor($this->getRoot()) . "." . $left_field . ")";
+        $first_left_relation = $this->getRelationByRelationName($left_table);
+        $first_left_relation = $first_left_relation? $first_left_relation : $this->root;
+        $joins[] = " " . $join->getType() . " JOIN $right_table " . $aliases[0] . " ON (" . $aliases[0] . "." . $right_field . " = " . $this->getAliasFor($first_left_relation) . "." . $left_field . ")";
         $first = false;
       } else {
         $alias = $this->getAliasFor($join);
@@ -92,13 +96,16 @@ class Query {
     $table = $left_table;
     $aliases = $this->getAliasFor($join);
 
-    return " " . $join->getType() . " JOIN $left_table " . $aliases[1] . " ON (" . $this->getAliasFor($this->getRoot()) . "." . $right_field . " = " . $aliases[1] . "." . $left_field . ")";
+    $left_relation = $join->getRelation();
+    $left_relation = $left_relation->getParent()? $left_relation->getParent() : $this->root;
+
+    return " " . $join->getType() . " JOIN $left_table " . $aliases[1] . " ON (" . $this->getAliasFor($left_relation) . "." . $right_field . " = " . $aliases[1] . "." . $left_field . ")";
   }
 
   public function getRelationByRelationName($relation_name) {
     $relations = $this->getRoot()->getListOf("\\fitch\\fields\\Relation");
     foreach ($relations as $relation) {
-      if ($relation->getName() == $relation_name) {
+      if ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name) {
         return $relation;
       }
     }
@@ -111,7 +118,8 @@ class Query {
       $alias = $this->getAliasFor($this->root);
     } else {
       $parts = explode(".", $column);
-      $alias = $this->registerAliasFor($parts[0], $this->getRelationByRelationName($parts[0]));
+      $alias = $this->getAliasFor($this->getRelationByRelationName($parts[0]));
+
       if (!$alias) {
         throw new Exception("Alias not found for " . $parts[0], 1);
       }
@@ -146,7 +154,8 @@ class Query {
     $sql .= " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
 
     foreach ($this->getJoins() as $join) {
-      $sql .= $this->getJoinSql($join, $meta);
+      $join_sql = $this->getJoinSql($join, $meta);
+      $sql .= $join_sql;
     }
 
     $where = "";
@@ -219,11 +228,12 @@ class Query {
       } else {
         $table = $node->getName();
       }
+    } else if ($node instanceof Relation) {
+      $table = $node->getName();
     } else if ($node instanceof Field) {
       $table = $node->getParent()->getName();
       $node = $node->getParent();
     } else if ($node instanceof \fitch\Join) {
-
       $relation = $node->getRelation();
       $table = ($relation->getParent()? $relation->getParent()->getName() : $relation->getName()) . "_" . $node->getTable();
       $aliases = array();
@@ -233,10 +243,9 @@ class Query {
 
       $aliases[] = $this->registerAliasFor($table, $relation);
       return $aliases;
-    } else { //relation
-      $table = $node->getTable();
     }
-    return $this->registerAliasFor($table, $node);
+    $alias = $this->registerAliasFor($table, $node);
+    return $alias;
   }
 
   public function registerAliasFor($table, $node) {
