@@ -3,7 +3,6 @@
 namespace fitch\sql;
 
 use \fitch\fields\Relation as Relation;
-use \fitch\fields\SoftRelation as SoftRelation;
 use \fitch\fields\Field as Field;
 use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
@@ -28,7 +27,7 @@ class ArrayHydration {
     $i = 0;
     while ($field = array_shift($pending)) {
       $alias = $field->getAliasOrName();
-      if ($field instanceof SoftRelation) {
+      if ($field instanceof Relation && $field->isGenerated()) {
         foreach($field->getChildren() as $child) {
           $pending[] = $child;
         }
@@ -49,7 +48,7 @@ class ArrayHydration {
       } else if ($field->isVisible()) {
         $pointer[$alias] = array();
         $name = $field->getName();
-        if ($field->getParent() instanceof SoftRelation)  {
+        if ($field->getParent() instanceof Relation && $field->isGenerated())  {
           $pointer[$alias]["_id"] = array("_name" => "_id", "_column_index" => $field->getParent()->getPkIndex(), "_generated" => $generated, "_type" => "primary_key");
         }
         $pointer[$alias]["_name"] = $alias;
@@ -63,7 +62,7 @@ class ArrayHydration {
         $i++;
       }
     }
-    // print_r($mapping);exit;
+    //print_r($mapping);exit;
     return $mapping;
   }
   public function getResult($rows) {

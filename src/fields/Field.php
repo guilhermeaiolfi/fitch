@@ -19,10 +19,13 @@ class Field extends Node {
     return $this->generated;
   }
   public function getFullname() {
-    if ($this->getParent() instanceof SoftRelation) {
-      return $this->getParent()->getName() . "." . $this->getName();
+    $name = "";
+    $parent = $this;
+    while (($parent = $parent->getParent()) && $parent instanceof \fitch\fields\Relation && $parent->isGenerated()) {
+      get_class($parent);
+      $name = $parent->getName() . "." . $name;
     }
-    return $this->name;
+    return $name . $this->name;
   }
 
   public function hasDot() {
@@ -49,13 +52,13 @@ class Field extends Node {
       }
       return $parts[$n-2] . "." . $parts[$n - 1];
     } else {
-      if ($this->getParent() instanceof \fitch\fields\SoftRelation) {
+      if ($this->getParent() instanceof \fitch\fields\Relation && $this->getParent()->isGenerated()) {
         return $this->getParent()->getParent()->getName() . "." . $this->getParent()->getName();
       }
       if (!$this->hasDot()) { return $this->getParent()->getName(); }
       $parent = $this->getParent();
 
-      while ($parent instanceof \fitch\fields\SoftRelation) { $parent = $parent->getParent(); }
+      while ($parent instanceof \fitch\fields\Relation && $parent->isGenerated()) { $parent = $parent->getParent(); }
       $parts = $this->getParts();
       $n = count($parts);
       if ($n == 2) {
@@ -71,7 +74,7 @@ class Field extends Node {
     $level = -1;
     $parent = $this->getParent();
     while ($parent) {
-      if ($parent instanceof \fitch\fields\SoftRelation) {
+      if ($parent instanceof \fitch\fields\Relation && $parent->isGenerated()) {
       } else if ($parent instanceof \fitch\fields\Relation) {
         $level++;
       }

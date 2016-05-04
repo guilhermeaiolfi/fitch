@@ -227,6 +227,46 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($result, $nested);
   }
 
+  public function testDottedDeep()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $rows = array (
+      array(1, "Name #1", 1, 1),
+      array(2, "Name #2", 1, 1),
+      array(1, "Name #1", 1, 2)
+    );
+
+    $ql = "/schools{name,departments.courses.id}";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($meta, $segment);
+
+    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+
+    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+
+    $nested = $populator->getResult($rows);
+
+    //print_r($nested);
+    $sql_expected = "SELECT schools_0.id, schools_0.name, departments_0.id, courses_0.id FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) LEFT JOIN department_course departments_courses_0 ON (departments_courses_0.departament_id = departments_0.id)  LEFT JOIN courses courses_0 ON (courses_0.id = departments_courses_0.course_id)";
+
+    $this->assertEquals($sql_expected, $sql);
+
+    $result = array (
+      "schools" => array (
+        0 => array("name" => "Name #1", "departments.courses.id" => array(1, 2)),
+        1 => array("name" => "Name #2", "departments.courses.id" => array(1))
+      )
+    );
+    $this->assertEquals($result, $nested);
+  }
+
 }
 
 

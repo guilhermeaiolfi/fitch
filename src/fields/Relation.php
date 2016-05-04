@@ -28,7 +28,8 @@ class Relation extends \fitch\fields\Field {
     $children = $this->getChildren();
     $replaced = false;
     for ($i = 0; $i < count($children); $i++) {
-      if ($children[$i]->getName() == "id") {
+      if ($children[$i]->getName() == "id") { //TODO: removed hardcode primary_key
+
         $primary_key_field->setField($children[$i]);
         $this->children[$i] = $primary_key_field;
         $replaced = true;
@@ -59,8 +60,20 @@ class Relation extends \fitch\fields\Field {
   }
 
   public function getJoins() {
-    $parts = explode(".", $this->getName());
+    $relation = $this;
     $joins = [];
+    if ($relation instanceof \fitch\fields\Relation) {
+      if ($relation instanceof \fitch\fields\Segment) {
+        break;
+      }
+      $join = new Join();
+      $join->setRelation($relation);
+      // if ($relation->isGenerated()) {
+      // }
+      $joins[] = $join;
+      //$relation = $relation->getParent();
+    }
+    /*$parts = explode(".", $this->getName());
     for ($i = 0; $i < count($parts); $i++) {
       $obj = new Join();
       $obj->setRelation($this);
@@ -72,7 +85,7 @@ class Relation extends \fitch\fields\Field {
       } else {
         $obj->setName($parts[$i - 1] . "." . $parts[$i]);
       }
-    }
+    }*/
     return $joins;
   }
 

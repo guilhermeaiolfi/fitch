@@ -55,7 +55,9 @@ class Query {
   }
 
   public function getJoinSql($join, $meta) {
-    $meta = $meta->getRelationConnections($join->getName());
+    $relation = $join->getRelation();
+    $parent = $relation->getParent();
+    $meta = $meta->getRelationConnections($parent->getName() . "." . $relation->getName());
     if (count($meta) == 2) {
       return $this->getManyToManyJoin($join, $meta);
     }
@@ -67,20 +69,27 @@ class Query {
     $joins = array();
     $first = true;
 
-    $aliases = $this->getAliasFor($join);
+    $relation = $join->getRelation();
+    $parent = $relation->getParent();
+
+    $relation_alias = $this->getTableAliasFor($relation);
+    $parent_alias = $this->getTableAliasFor($parent);
+    $join_alias = $this->getTableAliasFor($join);
 
     foreach ($meta as $left => $right) {
-      list($left_table, $left_field) = explode(".", $left);
-      list($right_table, $right_field) = explode(".", $right);
 
       if ($first) {
-        $first_left_relation = $this->getRelationByRelationName($left_table);
-        $first_left_relation = $first_left_relation? $first_left_relation : $this->root;
-        $joins[] = " " . $join->getType() . " JOIN $right_table " . $aliases[0] . " ON (" . $aliases[0] . "." . $right_field . " = " . $this->getAliasFor($first_left_relation) . "." . $left_field . ")";
+        list($parent_table, $parent_id) = explode(".", $left);
+        list($join_table, $join_parent_id) = explode(".", $right);
+
+        $joins[] = " " . $join->getType() . " JOIN $join_table " . $join_alias . " ON (" . $join_alias . "." . $join_parent_id . " = " . $parent_alias . "." . $parent_id . ")";
         $first = false;
+
       } else {
-        $alias = $this->getAliasFor($join);
-        $joins[] = " " . $join->getType() . " JOIN $right_table " . $aliases[1] . " ON (" . $aliases[1] . "." . $right_field . " = " . $aliases[0] . "." . $left_field . ")";
+        list($join_table, $join_parent_id) = explode(".", $left);
+        list($relation_table, $relation_id) = explode(".", $right);
+
+        $joins[] = " " . $join->getType() . " JOIN $relation_table " . $relation_alias . " ON (" . $relation_alias . "." . $relation_id . " = " . $join_alias . "." . $join_parent_id . ")";
       }
 
     }
@@ -88,18 +97,18 @@ class Query {
   }
 
   public function getOneToManyJoin($join, $meta) {
-
     list($left, $right) = each($meta);
     list($left_table, $left_field) = explode(".", $right);
     list($right_table, $right_field) = explode(".", $left);
 
-    $table = $left_table;
-    $aliases = $this->getAliasFor($join);
 
     $left_relation = $join->getRelation();
-    $left_relation = $left_relation->getParent()? $left_relation->getParent() : $this->root;
+    $right_relation = $join->getRelation();
 
-    return " " . $join->getType() . " JOIN $left_table " . $aliases[1] . " ON (" . $this->getAliasFor($left_relation) . "." . $right_field . " = " . $aliases[1] . "." . $left_field . ")";
+    $parent_table = $this->getTableAliasFor($join->getRelation()->getParent());
+    $join_table = $this->getTableAliasFor($join);
+
+    return " " . $join->getType() . " JOIN $left_table " . $join_table . " ON (" . $parent_table . "." . $right_field . " = " . $join_table . "." . $left_field . ")";
   }
 
   public function getRelationByRelationName($relation_name) {
@@ -115,10 +124,10 @@ class Query {
   public function getConditionSql($column, $operator, $value) {
     $alias = NULL;
     if (strpos($column, ".") === false) {
-      $alias = $this->getAliasFor($this->root);
+      $alias = $this->getTableAliasFor($this->root);
     } else {
       $parts = explode(".", $column);
-      $alias = $this->getAliasFor($this->getRelationByRelationName($parts[0]));
+      $alias = $this->getTableAliasFor($this->getRelationByRelationName($parts[0]));
 
       if (!$alias) {
         throw new Exception("Alias not found for " . $parts[0], 1);
@@ -140,18 +149,18 @@ class Query {
   public function getSql($meta) {
     $sql = "SELECT ";
 
-    $alias = $this->getAliasFor($this->getRoot());
+    $alias = $this->getTableAliasFor($this->getRoot());
 
     $fields = $this->getFields();
     $select_fields = array();
     for ($i = 0; $i < count($fields); $i++) {
       $field = $fields[$i];
-      $alias = $this->getAliasFor($field);
+      $alias = $this->getTableAliasFor($field);
       $select_fields[] = $alias . "." . $field->getName();
     }
 
     $sql .= implode(", ", $select_fields);
-    $sql .= " FROM " . $this->getTable() . " AS " . $this->getAliasFor($this->getRoot());
+    $sql .= " FROM " . $this->getTable() . " AS " . $this->getTableAliasFor($this->getRoot());
 
     foreach ($this->getJoins() as $join) {
       $join_sql = $this->getJoinSql($join, $meta);
@@ -219,9 +228,9 @@ class Query {
     $this->limit = array($limit, $offset);
   }
 
-  function getAliasFor($node) {
+  function getTableAliasFor($node) {
     $table = "";
-    if ($node instanceof Segment) {
+    if ($node instanceof Segment) { // TODO: improve this non-sense
       if ($node->hasDot()) {
         $parts = $node->getParts();
         $table = $parts[0];
@@ -235,14 +244,8 @@ class Query {
       $node = $node->getParent();
     } else if ($node instanceof \fitch\Join) {
       $relation = $node->getRelation();
-      $table = ($relation->getParent()? $relation->getParent()->getName() : $relation->getName()) . "_" . $node->getTable();
-      $aliases = array();
-      $aliases[] = $this->registerAliasFor($table, $relation);
-
-      $table = $node->getTable();
-
-      $aliases[] = $this->registerAliasFor($table, $relation);
-      return $aliases;
+      $table = $relation->getParent()->getName() . "_" . $relation->getName();
+      return $this->registerAliasFor($table, $node);
     }
     $alias = $this->registerAliasFor($table, $node);
     return $alias;

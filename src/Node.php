@@ -109,21 +109,27 @@ class Node {
     if (isset($data["fields"]) && is_array($data["fields"])) {
       foreach ($data["fields"] as $field) {
         $obj = null;
-        if (empty($field["fields"])) {
+        if (empty($field["fields"]) && strpos($field["name"], ".") === false) {
+          $obj = new Field($meta, $field);
+        } else { // relation
+          $obj = NULL;
           if (strpos($field["name"], ".") !== false) {
             $parts = explode(".", $field["name"]);
-            $child = $field;
             $n = count($parts);
-            $child["name"]= $parts[$n - 1];
-            $field["fields"] = array($child);
-            unset($parts[$n - 1]);
+            $child = array();
+            $child["name"] = array_shift($parts);
+
             $field["name"] = join(".", $parts);
-            $obj = new SoftRelation($meta, $field);
+
+            if (count($parts) > 0) {
+              $child["fields"] = array($field);
+            }
+
+            $obj = new Relation($meta, $child);
+            $obj->setGenerated(true);
           } else {
-            $obj = new Field($meta, $field);
+            $obj = new Relation($meta, $field);
           }
-        } else {
-          $obj = new Relation($meta, $field);
         }
         $obj->setParent($this);
         $this->addChild($obj);
