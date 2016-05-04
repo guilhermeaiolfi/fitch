@@ -52,7 +52,7 @@ Segment
   }
 
 ConditionBlock
-  = "?" expr:ConditionExpression { return expr; }
+  = "?" expr:ConditionExpression { return $expr; }
   / ("?" expr:ConditionExpression)?
 
 ConditionJoin
@@ -63,7 +63,7 @@ ConditionExpression
   = head:ConditionTerm tail:(ConditionJoin ConditionTerm)* {
      $result = array($head);
 
-    for ($i = 0; $i < $tail.length; $i++) {
+    for ($i = 0; $i < count($tail); $i++) {
       $result[] = $tail[$i][0];
       $result[] = $tail[$i][1];
     }
@@ -77,7 +77,7 @@ ConditionTerm
   / Condition
 
 Condition
-  = left:DottedIdentifier operator:Operator right:Value { return array( "left" => $left, "operator" => $operator, "right" => "right" ); }
+  = left:DottedIdentifier operator:Operator right:Value { return array( "left" => $left, "operator" => $operator, "right" => $right ); }
 
 FieldBlock
   = "{" fields:FieldList "}" { return $fields; }
@@ -113,15 +113,15 @@ ArgumentList
      }
 
 FieldList
-  = first:(Field) rest:("," __ Field)* {
-      return buildList($first, $rest, 2);
+  = first:(Field) rest:(__ "," __ Field)* {
+      return buildList($first, $rest, 3);
     }
 
 SegmentField
   = name:Identifier
 
 Field
-  = name:DottedIdentifier alias:(_ ":as" _ alias:string)? fields:(FieldBlock)? {
+  = name:DottedIdentifier alias:(__ ":as" __ alias:Identifier)? fields:(FieldBlock)? {
     $result = array( "name" => $name );
     if ($alias) {
       $result["alias"] = $alias[3];

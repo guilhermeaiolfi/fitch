@@ -26,6 +26,34 @@ class ParserTest extends PHPUnit_Framework_TestCase
         // [...]
     }
   }
+  public function testSingleConditionParser()
+  {
+    try
+    {
+        $parser = new Parser;
+        $result = $parser->parse("/school?(c=12)&a=1");
+        $expected = array(
+          "name"=> "school",
+          "type"=> "Segment",
+          "ids" => NULL,
+          "functions"=> array(),
+          "fields"=> NULL,
+          "conditions"=> array(
+            array(
+              array("left" => "c", "operator" => "=", "right" => 12)
+            ),
+            "&",
+            array("left" => "a", "operator" => "=", "right" => 1)
+          )
+        );
+        $this->assertEquals($result, $expected);
+    }
+    catch (PhpPegJs\SyntaxError $ex)
+    {
+        // Handle parsing error
+        // [...]
+    }
+  }
 
 }
 
