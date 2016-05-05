@@ -20,15 +20,15 @@ class SqlGenerator extends Generator {
     return NULL;
   }*/
 
-  public function generateQueryForSegment($segment) {
+  public function generateQueryForRelation($relation) {
     $joins = array();
     $meta = $this->getMeta();
 
     $query = new Query();
-    $query->setRoot($segment);
-    $fields[] = $segment;
+    $query->setRoot($relation);
+    $fields[] = $relation;
 
-    $query->setConditions($segment->getConditions());
+
 
     while ($field = array_shift($fields)) {
       if ($field instanceof Relation) {
@@ -45,12 +45,15 @@ class SqlGenerator extends Generator {
         $query->addField($field);
       }
     }
-    $function = $segment->getFunction("sort");
-    for($i = 0; $i < count($function); $i++) {
-      $query->addSortBy($function[$i]);
-    }
-    if ($function = $segment->getFunction("limit")) {
-      $query->limit($function["limit"], $function["offset"]);
+    if ($relation instanceof Segment) {
+      $query->setConditions($relation->getConditions());
+      $function = $relation->getFunction("sort");
+      for($i = 0; $i < count($function); $i++) {
+        $query->addSortBy($function[$i]);
+      }
+      if ($function = $relation->getFunction("limit")) {
+        $query->limit($function["limit"], $function["offset"]);
+      }
     }
 
     return $query;
@@ -59,7 +62,7 @@ class SqlGenerator extends Generator {
   public function getQueries() {
     $root = $this->getRoot();
     $queries = array();
-    $queries[] = $this->generateQueryForSegment($root);
+    $queries[] = $this->generateQueryForRelation($root);
     return $queries;
   }
 }

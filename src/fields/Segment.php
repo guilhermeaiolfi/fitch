@@ -35,48 +35,6 @@ class Segment extends Relation {
     return $joins;
   }
 
-  public function getRelationByName($relation_name) {
-    $relations = $this->getListOf("\\fitch\\fields\\Relation");
-    foreach ($relations as $relation) {
-      if ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name) {
-        return $relation;
-      }
-    }
-    return NULL;
-  }
-
-  public function getFieldByName($field_name, $relation_name) {
-    $field = $this->getListOf("\\fitch\\fields\\Field");
-    foreach ($fields as $field) {
-      $relation = $field->getParent();
-      if ($field->getName() == $field_name
-          && ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name)
-         ) {
-        return $field;
-      }
-    }
-    return NULL;
-  }
-
-  public function getFieldByFullname($fullname) {
-    $relation = NULL;
-    $parts = explode(".", $fullname);
-    $field_name = $parts[count($parts) - 1];
-    if (count($parts) == 1) {
-      $relation = $this;
-    } else {
-      $relation = $this->getRelationByName($parts[count($parts) - 2]);
-    }
-
-    if ($relation) {
-      foreach ($relation->getChildren() as $child) {
-        if ($child->getName() == $field_name) {
-          return $child;
-        }
-      }
-    }
-    return NULL;
-  }
   public function fixCondition($condition) {
     if (is_array($condition)) {
       if (isset($condition["field"])) { //condition

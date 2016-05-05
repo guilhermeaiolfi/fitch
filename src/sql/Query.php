@@ -170,8 +170,10 @@ class Query {
     $sql .= " FROM " . $this->getTable() . " AS " . $root_alias;
 
     foreach ($this->getJoins() as $join) {
-      $join_sql = $this->getJoinSql($join, $meta);
-      $sql .= $join_sql;
+      if ($join->getRelation() != $this->getRoot()) {
+        $join_sql = $this->getJoinSql($join, $meta);
+        $sql .= $join_sql;
+      }
     }
 
     $where = "";

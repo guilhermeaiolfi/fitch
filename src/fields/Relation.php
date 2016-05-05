@@ -19,6 +19,7 @@ class Relation extends \fitch\fields\Field {
     }
     $this->createHashField();
   }
+
   protected function createHashField() {
     $primary_key_field = new PrimaryKeyHash($this->getMeta(), array('name' => "id"));
     $primary_key_field->setPrimaryKey(array("id"));
@@ -60,33 +61,11 @@ class Relation extends \fitch\fields\Field {
   }
 
   public function getJoins() {
-    $relation = $this;
-    $joins = [];
-    if ($relation instanceof \fitch\fields\Relation) {
-      if ($relation instanceof \fitch\fields\Segment) {
-        break;
-      }
-      $join = new Join();
-      $join->setRelation($relation);
-      // if ($relation->isGenerated()) {
-      // }
-      $joins[] = $join;
-      //$relation = $relation->getParent();
-    }
-    /*$parts = explode(".", $this->getName());
-    for ($i = 0; $i < count($parts); $i++) {
-      $obj = new Join();
-      $obj->setRelation($this);
-      $obj->setTable($parts[$i]);
-      if ($i == 0) {
-        $name = $this->getParent()? $this->getParent()->getName() . "." . $parts[0] : $parts[0];
-        $obj->setName($name);
-        $joins[] = $obj;
-      } else {
-        $obj->setName($parts[$i - 1] . "." . $parts[$i]);
-      }
-    }*/
-    return $joins;
+
+    $join = new Join();
+    $join->setRelation($this);
+
+    return array($join);
   }
 
   public function hasPrimaryKey() {
@@ -140,6 +119,49 @@ class Relation extends \fitch\fields\Field {
       }
     }
     return $mapping;
+  }
+
+  public function getRelationByName($relation_name) {
+    $relations = $this->getListOf("\\fitch\\fields\\Relation");
+    foreach ($relations as $relation) {
+      if ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name) {
+        return $relation;
+      }
+    }
+    return NULL;
+  }
+
+  public function getFieldByName($field_name, $relation_name) {
+    $field = $this->getListOf("\\fitch\\fields\\Field");
+    foreach ($fields as $field) {
+      $relation = $field->getParent();
+      if ($field->getName() == $field_name
+          && ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name)
+         ) {
+        return $field;
+      }
+    }
+    return NULL;
+  }
+
+  public function getFieldByFullname($fullname) {
+    $relation = NULL;
+    $parts = explode(".", $fullname);
+    $field_name = $parts[count($parts) - 1];
+    if (count($parts) == 1) {
+      $relation = $this;
+    } else {
+      $relation = $this->getRelationByName($parts[count($parts) - 2]);
+    }
+
+    if ($relation) {
+      foreach ($relation->getChildren() as $child) {
+        if ($child->getName() == $field_name) {
+          return $child;
+        }
+      }
+    }
+    return NULL;
   }
 }
 
