@@ -53,7 +53,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           )
         )
       ),
-      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
+      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
           0 => array("name" => "School #1", "department_name" => array(0 => "Department #1", 1 => "Department #2")),
@@ -74,7 +74,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           )
         )
       ),
-      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
+      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
           0 => array("name" => "School #1", "departments.name" => array(0 => "Department #1", 1 => "Department #2")),
@@ -102,7 +102,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           )
         )
       ),
-      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
+      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
           0 => array("alias_name" => "School #1", "departments" => array(
@@ -136,7 +136,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           )
         )
       ),
-      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
+      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
           0 => array("name" => "School #1", "departments" => array(
@@ -165,7 +165,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           array("name" => "name"),
         )
       ),
-      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
+      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)",
       "result" => array(
         "schools" => array(
           0 => array("id" => 1, "department_name" => array(0 => "Department #1", 1 => "Department #2"), "name" => "School #1"),
@@ -234,7 +234,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           )
         )
       ),
-      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) WHERE departments_0.id = 1 AND (departments_0.id = 2 OR departments_0.id = 3)",
+      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) WHERE departments_0.id = 1 AND (departments_0.id = 2 OR departments_0.id = 3)",
     );
 
     $tests["one to many join"] = array(
@@ -246,7 +246,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           array("name" => "director.id")
         )
       ),
-      "sql" => "SELECT schools_0.id, director_0.id FROM schools AS schools_0 LEFT JOIN users director_0 ON (schools_0.director_id = director_0.id)",
+      "sql" => "SELECT schools_0.id, director_0.id FROM schools AS schools_0 INNER JOIN users director_0 ON (schools_0.director_id = director_0.id)",
     );
 
 

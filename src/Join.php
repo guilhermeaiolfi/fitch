@@ -8,7 +8,7 @@ class Join {
   public $name = null;
   public $relation = null;
   public $conditions = "";
-  public $type = "LEFT";
+  public $type = "INNER";
   public function setTable($table) {
     $this->table = $table;
   }
