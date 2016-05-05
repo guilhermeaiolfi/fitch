@@ -14,7 +14,7 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
     ),
     "schools.director" => array(
       "foreign_keys" => array(
-        "school.director_id" => "users.id"
+        "schools.director_id" => "users.id"
       )
     ),
     "schools.departments" => array(
@@ -40,10 +40,10 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
   public function testLimitFunction()
   {
     $parser = new \fitch\parser\Parser();
-    $result = $parser->parse("/school.limit(10,20)");
+    $result = $parser->parse("/schools.limit(10,20)");
 
     $expected = array (
-      "name" => "school",
+      "name" => "schools",
       "type" => "Segment",
       "ids" => NULL,
       "functions" =>  array (
@@ -68,7 +68,7 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
     $sql = $queries[0]->getSql($meta);
 
     $this->assertEquals($result, $expected);
-    $this->assertEquals($sql, "SELECT school_0.id FROM school AS school_0 LIMIT 10,20");
+    $this->assertEquals($sql, "SELECT schools_0.id, schools_0.name FROM schools AS schools_0 LIMIT 10,20");
   }
 
   public function testSortFunction()

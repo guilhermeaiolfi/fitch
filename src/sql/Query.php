@@ -213,14 +213,7 @@ class Query {
 
   function getTableAliasFor($node) {
     $table = "";
-    if ($node instanceof Segment) { // TODO: improve this non-sense
-      if ($node->hasDot()) {
-        $parts = $node->getParts();
-        $table = $parts[0];
-      } else {
-        $table = $node->getName();
-      }
-    } else if ($node instanceof Relation) {
+    if ($node instanceof Relation) {
       $table = $node->getName();
     } else if ($node instanceof Field) {
       $table = $node->getParent()->getName();

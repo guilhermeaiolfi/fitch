@@ -6,18 +6,11 @@ use \fitch\Node as Node;
 use \fitch\fields\SoftRelation as SoftRelation;
 
 class Field extends Node {
-  protected $generate = false;
 
   public function isMany() {
     return !$this->getParent() || $this->getMeta()->isManyToManyRelation($this->getRelationName());
   }
 
-  public function setGenerated($b) {
-    $this->generated = $b;
-  }
-  public function isGenerated() {
-    return $this->generated;
-  }
   public function getFullname() {
     $name = "";
     $parent = $this;

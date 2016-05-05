@@ -13,7 +13,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
     ),
     "schools.director" => array(
       "foreign_keys" => array(
-        "school.director_id" => "users.id"
+        "schools.director_id" => "users.id"
       )
     ),
     "schools.departments" => array(

@@ -15,19 +15,19 @@
 }
 
 start
-  = SegmentBlock
+  = Segment
   / FieldBlock
 
 SegmentExtra
   = "." Identifier "(" ArgumentList? ")"
   / "." Identifier
 
-SegmentBlock
+Segment
   = segment:"/" segment:Identifier segment_right:SegmentExtra* ids:("[" LocatorList "]")? __ fields:FieldBlock? conditions:ConditionBlock {
   var functions = [], item;
   while(item = segment_right.pop()) {
     if (item[2] == "(") {
-      functions.push({ name: item[1], params: item[3]});
+      functions.push({ type: "Function", name: item[1], params: item[3]});
     } else {
       segment += "." + item[1];
     }
@@ -44,7 +44,7 @@ SegmentBlock
 
 ConditionBlock
   = "?" expr:ConditionExpression { return expr; }
-  / "?" expr:ConditionExpression?
+  / ("?" expr:ConditionExpression)?
 
 ConditionJoin
  = "&"
@@ -104,15 +104,15 @@ ArgumentList
      }
 
 FieldList
-  = first:(Field) rest:("," whitespaces? Field)* {
-      return buildList(first, rest, 1);
+  = first:(Field) rest:("," __ Field)* {
+      return buildList(first, rest, 2);
     }
 
 SegmentField
   = name:Identifier
 
 Field
-  = name:DottedIdentifier alias:(_ ":as" _ alias:string)? fields:(FieldBlock)? {
+  = name:DottedIdentifier alias:(__ ":as" __ field:Identifier)? fields:(FieldBlock)? {
     var result = { name: name }
     if (alias) {
       result["alias"] = alias[3];
@@ -122,7 +122,7 @@ Field
     }
     return result;
   }
-  / SegmentBlock
+  / Segment
 
 
 DottedIdentifier

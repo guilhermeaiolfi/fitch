@@ -20,21 +20,6 @@ class Segment extends Relation {
     return $this->conditions;
   }
 
-  public function getJoins() {
-    // TODO: support multi level JOINs: school.department.another_table
-    $joins = array();
-    if ($this->hasDot()) {
-      $parts = $this->getParts();
-      $join = new \fitch\Join();
-      $join->setName($this->getName());
-      $join->setRelation($this);
-      $join->setType("INNER");
-      $join->setTable($parts[count($parts) - 1]);
-      $joins[] = $join;
-    }
-    return $joins;
-  }
-
   public function fixCondition($condition) {
     if (is_array($condition)) {
       if (isset($condition["field"])) { //condition
@@ -61,7 +46,6 @@ class Segment extends Relation {
     parent::__construct($meta, $data);
 
     $this->conditions = $data["conditions"];
-    //print_r($data["conditions"]);
 
     $this->conditions = $this->fixCondition($data["conditions"]);
 

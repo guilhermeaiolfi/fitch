@@ -14,6 +14,15 @@ class Node {
   protected $meta = null;
   protected $alias = null;
   protected $visible = true;
+  protected $generated = false;
+
+  public function setGenerated($b) {
+    $this->generated = $b;
+  }
+
+  public function isGenerated() {
+    return $this->generated;
+  }
 
   public function setVisible($visible) {
     $this->visible = $visible;
@@ -104,32 +113,39 @@ class Node {
 
   public function __construct($meta, $data = null) {
     $this->setMeta($meta);
+    $this->setGenerated(!!$data["generated"]);
     @$this->setName($data["name"]);
     @$this->setAlias($data["alias"]);
+
+    $parts = explode(".", $data["name"]);
+    $n = count($parts);
+
+    if ($n > 1) {
+      //echo "dsadsa";exit;
+      $data["name"] = array_shift($parts);
+      $this->setName($data["name"]);
+      $this->setGenerated(true);
+      $this->setAlias(NULL);
+      $data["fields"] = array(
+          array(
+            "name" => implode(".", $parts),
+            "generated" => false,
+            "alias" => $data["alias"],
+            "fields" => $data["fields"]
+          )
+      );
+    }
+    //print_r($data);
+
+
     if (isset($data["fields"]) && is_array($data["fields"])) {
       foreach ($data["fields"] as $field) {
         $obj = null;
-        if (empty($field["fields"]) && strpos($field["name"], ".") === false) {
+
+        if (empty($field["fields"]) && strpos($field["name"], ".") === false && $meta->getRelationConnections($data["name"] . "." . $field["name"]) == NULL) {
           $obj = new Field($meta, $field);
         } else { // relation
-          $obj = NULL;
-          if (strpos($field["name"], ".") !== false) {
-            $parts = explode(".", $field["name"]);
-            $n = count($parts);
-            $child = array();
-            $child["name"] = array_shift($parts);
-
-            $field["name"] = join(".", $parts);
-
-            if (count($parts) > 0) {
-              $child["fields"] = array($field);
-            }
-
-            $obj = new Relation($meta, $child);
-            $obj->setGenerated(true);
-          } else {
             $obj = new Relation($meta, $field);
-          }
         }
         $obj->setParent($this);
         $this->addChild($obj);

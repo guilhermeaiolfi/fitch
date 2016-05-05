@@ -39,7 +39,7 @@ Segment
       if ($item[2] == "(") {
         $functions[] = array("type" => "Function", "name" => $item[1], "params" => $item[3]);
       } else {
-        $segment += "." + $item[1];
+        $segment .= "." . $item[1];
       }
     }
     return array(
