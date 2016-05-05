@@ -106,7 +106,7 @@ class Query {
     $right_relation = $join->getRelation();
 
     $parent_table = $this->getTableAliasFor($join->getRelation()->getParent());
-    $join_table = $this->getTableAliasFor($join);
+    $join_table = $this->getTableAliasFor($right_relation);
 
     return " " . $join->getType() . " JOIN $left_table " . $join_table . " ON (" . $parent_table . "." . $right_field . " = " . $join_table . "." . $left_field . ")";
   }

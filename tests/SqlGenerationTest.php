@@ -237,6 +237,18 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id FROM schools AS schools_0 LEFT JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  LEFT JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) WHERE departments_0.id = 1 AND (departments_0.id = 2 OR departments_0.id = 3)",
     );
 
+    $tests["one to many join"] = array(
+      "token" => array(
+        "name" => "schools",
+        "type" => "Segment",
+        "fields" => array(
+          array("name" => "id"),
+          array("name" => "director.id")
+        )
+      ),
+      "sql" => "SELECT schools_0.id, director_0.id FROM schools AS schools_0 LEFT JOIN users director_0 ON (schools_0.director_id = director_0.id)",
+    );
+
 
     $meta = $this->meta;
 
