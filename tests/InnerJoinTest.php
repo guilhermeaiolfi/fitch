@@ -166,8 +166,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{id,departments :as dep{id}}?dep.id=1";
 
     $segment = $parser->parse($ql);
-    //print_r($segment);exit;
     $segment = new \fitch\fields\Segment($meta, $segment);
+    //print_r($segment->getMapping());exit;
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
@@ -189,7 +189,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($result, $nested);
   }
 
-  /*public function testThreeDeepRelation()
+  public function testThreeDeepRelation()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -266,7 +266,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
       )
     );
     $this->assertEquals($result, $nested);
-  }*/
+  }
 
 }
 

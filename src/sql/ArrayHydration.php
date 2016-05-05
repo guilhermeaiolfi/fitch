@@ -17,60 +17,11 @@ class ArrayHydration {
     $this->meta = $meta;
   }
 
-  public function getMapping() {
-    $meta = $this->meta;
-    $root = $this->segment;
-    $mapping = array();
-    $pending = array($root);
-    $pointer = &$mapping;
-
-    $i = 0;
-    while ($field = array_shift($pending)) {
-      $alias = $field->getAliasOrName();
-      if ($field instanceof Relation && $field->isGenerated()) {
-        foreach($field->getChildren() as $child) {
-          $pending[] = $child;
-        }
-        continue;
-      } else if (is_a($field, "\\fitch\\fields\\Relation")) {
-        $pointer[$alias] = array();
-        $pointer = &$pointer[$alias];
-        $pointer["_name"] = $alias;
-        $pointer["_type"] = "relation";
-        $pointer["_leaf"] = false;
-        $pointer["_many"] = $field->isMany();
-        foreach($field->getChildren() as $child) {
-          $pending[] = $child;
-        }
-        $pointer["_id"] = array("_name" => "_id", "_column_index" =>  $field->getPkIndex(), "_generated" => $generated, "_type" => "primary_key");
-        $pointer["_children"] = array();
-        $pointer = &$pointer['_children'];
-      } else if ($field->isVisible()) {
-        $pointer[$alias] = array();
-        $name = $field->getName();
-        if ($field->getParent() instanceof Relation && $field->isGenerated())  {
-          $pointer[$alias]["_id"] = array("_name" => "_id", "_column_index" => $field->getParent()->getPkIndex(), "_generated" => $generated, "_type" => "primary_key");
-        }
-        $pointer[$alias]["_name"] = $alias;
-        $pointer[$alias]["_leaf"] = true;
-        $pointer[$alias]["_type"] = "field";
-        $pointer[$alias]["_level"] = $field->getLevel();
-        $pointer[$alias]["_many"] = $field->isMany();
-        $pointer[$alias]["_column_index"] = $i;
-        $i++;
-      } else {
-        $i++;
-      }
-    }
-    //print_r($mapping);exit;
-    return $mapping;
-  }
   public function getResult($rows) {
     $result = array();
     $index = 0;
-    $mapping = $this->getMapping();
     foreach($rows as $row) {
-      $this->populateRow($result, $row, $mapping);
+      $this->populateRow($result, $row);
     }
     return $result;
   }
@@ -108,43 +59,46 @@ class ArrayHydration {
     $last["_value"] = $line;
   }
 
-  public function setFieldValue (&$level, $row, $field) {
+  public function setFieldValue (&$level, $field, $value) {
     $relation = $level["_relation"];
-    $name = $field["_name"];
+    $name = $field->getAliasOrName();
 
     $arr = &$level["_pointer"];
-    if ($field["_many"]) {
+    if ($field->isMany()) {
       if (!is_array($arr[$name])) {
         $arr[$name] = array();
       }
-      $arr[$name][] = $row[$field["_column_index"]];
+      $arr[$name][] = $value;
     } else {
-      $arr[$name] = $row[$field["_column_index"]];
+      $arr[$name] = $value;
     }
   }
 
-  public function populateRow(&$result, $row, $mapping) {
-    $pending = $mapping;
-    // print_r($mapping);exit;
+  public function populateRow(&$result, $row) {
     $arr = &$result;
     $relations = array();
     $ids = array();
 
-    while ($node = array_shift($pending)) {
-      $column_index = $node["_column_index"];
-      $name = $node["_name"];
+    $column_index = 0;
+    $pending = array($this->segment);
 
-      if ($node["_type"] == "relation") {
-        if (is_array($node['_children'])) {
-          foreach ($node['_children'] as $child) {
+    while ($node = array_shift($pending)) {
+      $name = $node->getAliasOrName();
+
+      if ($node instanceof \fitch\fields\Relation) {
+        if ($children = $node->getChildren()) {
+          foreach ($children as $child) {
             $pending[] = $child;
+          }
+          if ($node->isGenerated()) {
+            continue;
           }
         }
         if (!is_array($arr[$name])) {
           $arr[$name] = array();
         }
 
-        $id = $row[$node["_id"]["_column_index"]];
+        $id = $row[$node->getPkIndex()];
 
         $ids[] = array($name => $id);
 
@@ -159,8 +113,11 @@ class ArrayHydration {
 
         $relations[] = array("_pointer" => &$arr, "_relation" => $node);
 
-      } elseif ($node["_type"] == "field") {
-        $this->setFieldValue($relations[$node["_level"]], $row, $node);
+      } elseif ($node instanceof \fitch\fields\Field) {
+        if ($node->isVisible()) {
+          $this->setFieldValue($relations[$node->getLevel()], $node, $row[$column_index]);
+        }
+        $column_index++;
       }
     }
   }

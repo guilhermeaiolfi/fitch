@@ -98,6 +98,49 @@ class Relation extends \fitch\fields\Field {
     }
     return NULL;
   }
+
+  public function getMapping() {
+    $mapping = array();
+    $pending = array($this);
+    $pointer = &$mapping;
+
+    $i = 0;
+    while ($field = array_shift($pending)) {
+      $alias = $field->getAliasOrName();
+      if ($field instanceof Relation) {
+        foreach($field->getChildren() as $child) {
+          $pending[] = $child;
+        }
+        if ($field->isGenerated()) {
+          continue;
+        }
+        $pointer[$alias] = array();
+        $pointer = &$pointer[$alias];
+        $pointer["_name"] = $alias;
+        $pointer["_type"] = "relation";
+        $pointer["_leaf"] = false;
+        $pointer["_many"] = $field->isMany();
+        $pointer["_id"] = array("_name" => "_id", "_column_index" =>  $field->getPkIndex(), "_generated" => $generated, "_type" => "primary_key");
+        $pointer["_children"] = array();
+        $pointer = &$pointer['_children'];
+      } else {
+        $pointer[$alias] = array();
+        $name = $field->getName();
+        if ($field->getParent() instanceof Relation && $field->isGenerated())  {
+          $pointer[$alias]["_id"] = array("_name" => "_id", "_column_index" => $field->getParent()->getPkIndex(), "_generated" => $generated, "_type" => "primary_key");
+        }
+        $pointer[$alias]["_name"] = $alias;
+        $pointer[$alias]["_leaf"] = true;
+        $pointer[$alias]["_visible"] = $field->isVisible();
+        $pointer[$alias]["_type"] = "field";
+        $pointer[$alias]["_level"] = $field->getLevel();
+        $pointer[$alias]["_many"] = $field->isMany();
+        $pointer[$alias]["_column_index"] = $i;
+        $i++;
+      }
+    }
+    return $mapping;
+  }
 }
 
 ?>
