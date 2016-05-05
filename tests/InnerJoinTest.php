@@ -248,9 +248,9 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $parser = new Parser();
 
     $rows = array (
-      array(1, "Name #1", 1, 1),
-      array(2, "Name #2", 1, 1),
-      array(1, "Name #1", 1, 2)
+      array(1, "Name #1", 1),
+      array(2, "Name #2", 1),
+      array(1, "Name #1", 2)
     );
 
     $ql = "/schools{name,departments.courses.id}";
@@ -266,7 +266,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $nested = $populator->getResult($rows);
 
-    $sql_expected = "SELECT schools_0.id, schools_0.name, departments_0.id, courses_0.id FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) INNER JOIN department_course departments_courses_0 ON (departments_courses_0.departament_id = departments_0.id)  INNER JOIN courses courses_0 ON (courses_0.id = departments_courses_0.course_id)";
+    $sql_expected = "SELECT schools_0.id, schools_0.name, courses_0.id FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) INNER JOIN department_course departments_courses_0 ON (departments_courses_0.departament_id = departments_0.id)  INNER JOIN courses courses_0 ON (courses_0.id = departments_courses_0.course_id)";
 
     $this->assertEquals($sql_expected, $sql);
 
@@ -304,7 +304,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $query = $generator->generateQueryForRelation($relation);
     $sql = $query->getSql($meta);
 
-    $sql_expected = "SELECT departments_0.id, courses_0.id FROM departments AS departments_0 INNER JOIN department_course departments_courses_0 ON (departments_courses_0.departament_id = departments_0.id)  INNER JOIN courses courses_0 ON (courses_0.id = departments_courses_0.course_id)";
+    $sql_expected = "SELECT courses_0.id FROM departments AS departments_0 INNER JOIN department_course departments_courses_0 ON (departments_courses_0.departament_id = departments_0.id)  INNER JOIN courses courses_0 ON (courses_0.id = departments_courses_0.course_id)";
 
     $this->assertEquals($sql_expected, $sql);
   }
@@ -345,7 +345,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     );
 
     $nested = $populator->getResult($rows);
-//print_r($nested);
+
     $result = array (
       "schools.departments" => array (
         0 => array("id" => 2, "name" => "Department #1"),

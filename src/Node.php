@@ -126,6 +126,7 @@ class Node {
       $this->setName($data["name"]);
       $this->setGenerated(true);
       $this->setAlias(NULL);
+      $this->setVisible(false);
       $data["fields"] = array(
           array(
             "name" => implode(".", $parts),

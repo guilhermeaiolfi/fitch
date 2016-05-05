@@ -5,6 +5,7 @@ namespace fitch\fields;
 use \fitch\Join as Join;
 
 class Relation extends \fitch\fields\Field {
+
   public function __construct($meta, $data = null) {
     parent::__construct($meta, $data);
     if (count($this->children) == 0) {
@@ -17,9 +18,19 @@ class Relation extends \fitch\fields\Field {
         }
       }
     }
-    $this->createHashField();
+    if ($this->hasVisibleFields()) {
+      $this->createHashField();
+    }
   }
 
+  protected function hasVisibleFields() {
+    foreach ($this->getChildren() as $child) {
+      if ($child->isVisible()) {
+        return true;
+      }
+    }
+    return false;
+  }
   protected function createHashField() {
     $primary_key_field = new PrimaryKeyHash($this->getMeta(), array('name' => "id"));
     $primary_key_field->setPrimaryKey(array("id"));
