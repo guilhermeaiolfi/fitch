@@ -35,18 +35,90 @@ class Segment extends Relation {
     return $joins;
   }
 
+  public function getRelationByName($relation_name) {
+    $relations = $this->getListOf("\\fitch\\fields\\Relation");
+    foreach ($relations as $relation) {
+      if ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name) {
+        return $relation;
+      }
+    }
+    return NULL;
+  }
+
+  public function getFieldByName($field_name, $relation_name) {
+    $field = $this->getListOf("\\fitch\\fields\\Field");
+    foreach ($fields as $field) {
+      $relation = $field->getParent();
+      if ($field->getName() == $field_name
+          && ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name)
+         ) {
+        return $field;
+      }
+    }
+    return NULL;
+  }
+
+  public function getFieldByFullname($fullname) {
+    $relation = NULL;
+    $parts = explode(".", $fullname);
+    $field_name = $parts[count($parts) - 1];
+    if (count($parts) == 1) {
+      $relation = $this;
+    } else {
+      $relation = $this->getRelationByName($parts[count($parts) - 2]);
+    }
+
+    if ($relation) {
+      foreach ($relation->getChildren() as $child) {
+        if ($child->getName() == $field_name) {
+          return $child;
+        }
+      }
+    }
+    return NULL;
+  }
+  public function fixCondition($condition) {
+    if (is_array($condition)) {
+      if (isset($condition["field"])) { //condition
+        $field = $this->getFieldByFullname($condition["field"]);
+        if (!$field) {
+          throw new \Exception("No field(" . $condition["field"] . ") found" , 1);
+        }
+        $condition["field"] = $field;
+        return $condition;
+      } else { // parenthesis
+        $parenthesis = array();
+         foreach ($condition as $item) {
+          $parenthesis[] = $this->fixCondition($item);
+        }
+        return $parenthesis;
+      }
+    } else { // SQL's 'AND' or 'OR'
+      return $condition;
+    }
+    return NULL;
+  }
+
   public function __construct ($meta, $data = null) {
     parent::__construct($meta, $data);
 
     $this->conditions = $data["conditions"];
+    //print_r($data["conditions"]);
+
+    $this->conditions = $this->fixCondition($data["conditions"]);
+
     for($i = 0; $i < count($data["functions"]); $i++) {
 
       $function = $data["functions"][$i];
       if ($function["name"] == "sort") {
         $this->functions["sort"] = array();
         for($y = 0; $y < count($function["params"]); $y++) {
-           $this->functions["sort"][] = array (
-            "column" => $function["params"][$y][0],
+          $field = $this->getFieldByFullname($function["params"][$y][0]);
+          if (!$field) {
+            throw new \Exception("No field(" . $function["params"][$y][0] . ") found" , 1);
+          }
+          $this->functions["sort"][] = array (
+            "field" => $field,
             "direction" => $function["params"][$y][1]
           );
         }

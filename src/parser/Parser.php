@@ -2885,7 +2885,7 @@ class Parser{
     $this->peg_c26 = function($expr) {
         return $expr;
       };
-    $this->peg_c27 = function($left,$operator,$right) { return array( "left" => $left, "operator" => $operator, "right" => $right ); };
+    $this->peg_c27 = function($left,$operator,$right) { return array( "field" => $left, "operator" => $operator, "value" => $right ); };
     $this->peg_c28 = "{";
     $this->peg_c29 = array( "type" => "literal", "value" => "{", "description" => "\"{\"" );
     $this->peg_c30 = "}";

@@ -77,7 +77,7 @@ ConditionTerm
   / Condition
 
 Condition
-  = left:DottedIdentifier operator:Operator right:Value { return array( "left" => $left, "operator" => $operator, "right" => $right ); }
+  = left:DottedIdentifier operator:Operator right:Value { return array( "field" => $left, "operator" => $operator, "value" => $right ); }
 
 FieldBlock
   = "{" fields:FieldList "}" { return $fields; }

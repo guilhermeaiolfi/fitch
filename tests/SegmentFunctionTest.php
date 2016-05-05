@@ -74,10 +74,10 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
   public function testSortFunction()
   {
     $parser = new \fitch\parser\Parser();
-    $result = $parser->parse("/school.sort(id+,name-)");
+    $result = $parser->parse("/schools.sort(id+,name-)");
 
     $expected = array (
-      "name" => "school",
+      "name" => "schools",
       "type" => "Segment",
       "ids" => NULL,
       "functions" =>  array (
@@ -102,9 +102,8 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
     $sql = $queries[0]->getSql($meta);
 
     $this->assertEquals($result, $expected);
-    $this->assertEquals($sql, "SELECT school_0.id FROM school AS school_0 SORT BY id ASC, name DESC");
+    $this->assertEquals("SELECT schools_0.id, schools_0.name FROM schools AS schools_0 SORT BY schools_0.id ASC, schools_0.name DESC", $sql);
   }
-
 }
 
 

@@ -10,6 +10,16 @@ use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class SqlGenerator extends Generator {
 
+/*  public function getRelationByRelationName($relation_name) {
+    $relations = $this->getRoot()->getListOf("\\fitch\\fields\\Relation");
+    foreach ($relations as $relation) {
+      if ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name) {
+        return $relation;
+      }
+    }
+    return NULL;
+  }*/
+
   public function generateQueryForSegment($segment) {
     $joins = array();
     $meta = $this->getMeta();

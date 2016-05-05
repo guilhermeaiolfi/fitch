@@ -180,7 +180,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
         "name" => "schools",
         "type" => "Segment",
         "conditions" => array(
-          array("left" => "id", "operator" => "=", "right" => 12)
+          array("field" => "id", "operator" => "=", "value" => 12)
         )
       ),
       "sql" => "SELECT schools_0.id, schools_0.name FROM schools AS schools_0 WHERE schools_0.id = 12"
@@ -190,9 +190,9 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
         "name" => "schools",
         "type" => "Segment",
         "conditions" => array(
-          array("left" => "id", "operator" => "=", "right" => 12),
+          array("field" => "id", "operator" => "=", "value" => 12),
           "&",
-          array("left" => "name", "operator" => "=", "right" => "guilherme"),
+          array("field" => "name", "operator" => "=", "value" => "guilherme"),
         )
       ),
       "sql" => "SELECT schools_0.id, schools_0.name FROM schools AS schools_0 WHERE schools_0.id = 12 AND schools_0.name = \\\"guilherme\\\""
@@ -203,12 +203,12 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
         "name" => "schools",
         "type" => "Segment",
         "conditions" => array(
-          array("left" => "id", "operator" => "=", "right" => 1),
+          array("field" => "id", "operator" => "=", "value" => 1),
           "&",
           array(
-            array("left" => "id", "operator" => "=", "right" => 2),
+            array("field" => "id", "operator" => "=", "value" => 2),
             "|",
-            array("left" => "id", "operator" => "=", "right" => 3)
+            array("field" => "id", "operator" => "=", "value" => 3)
           )
         )
       ),
@@ -225,12 +225,12 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           array("name" => "name"),
         ),
         "conditions" => array(
-          array("left" => "departments.id", "operator" => "=", "right" => 1),
+          array("field" => "departments.id", "operator" => "=", "value" => 1),
           "&",
           array(
-            array("left" => "departments.id", "operator" => "=", "right" => 2),
+            array("field" => "departments.id", "operator" => "=", "value" => 2),
             "|",
-            array("left" => "departments.id", "operator" => "=", "right" => 3)
+            array("field" => "departments.id", "operator" => "=", "value" => 3)
           )
         )
       ),

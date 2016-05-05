@@ -40,10 +40,10 @@ class ParserTest extends PHPUnit_Framework_TestCase
           "fields"=> NULL,
           "conditions"=> array(
             array(
-              array("left" => "c", "operator" => "=", "right" => 12)
+              array("field" => "c", "operator" => "=", "value" => 12)
             ),
             "&",
-            array("left" => "a", "operator" => "=", "right" => 1)
+            array("field" => "a", "operator" => "=", "value" => 1)
           )
         );
         $this->assertEquals($result, $expected);

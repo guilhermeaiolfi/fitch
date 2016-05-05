@@ -22,7 +22,6 @@ class Field extends Node {
     $name = "";
     $parent = $this;
     while (($parent = $parent->getParent()) && $parent instanceof \fitch\fields\Relation && $parent->isGenerated()) {
-      get_class($parent);
       $name = $parent->getName() . "." . $name;
     }
     return $name . $this->name;

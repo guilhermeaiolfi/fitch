@@ -68,7 +68,7 @@ ConditionTerm
   / Condition
 
 Condition
-  = left:DottedIdentifier operator:Operator right:Value { return { left: left, operator: operator, right: right } }
+  = left:DottedIdentifier operator:Operator right:Value { return { field: left, operator: operator, value: right } }
 
 FieldBlock
   = "{" fields:FieldList "}" { return fields; }

@@ -111,45 +111,52 @@ class Query {
     return " " . $join->getType() . " JOIN $left_table " . $join_table . " ON (" . $parent_table . "." . $right_field . " = " . $join_table . "." . $left_field . ")";
   }
 
-  public function getRelationByRelationName($relation_name) {
-    $relations = $this->getRoot()->getListOf("\\fitch\\fields\\Relation");
-    foreach ($relations as $relation) {
-      if ($relation->getName() == $relation_name || $relation->getAlias() == $relation_name) {
-        return $relation;
+  public function getConditionSql($condition, $root = true) {
+    if (is_array($condition)) {
+      if (isset($condition["field"]) && isset($condition["value"])) { //condition
+        $field = $condition["field"];
+        $operator = $condition["operator"];
+        $value = $condition["value"];
+        $alias = $this->getTableAliasFor($field->getParent());
+        if ($operator == "~") {
+          return $alias . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+        }
+        if ($operator == "!=") {
+          return $alias . "." . $field->getName() . " <> " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+        }
+        if ($operator == "~") {
+          return $alias . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+        }
+        return $alias . "." . $field->getName() . " " . $operator . " " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+      } else { // parenthesis
+        $where = !$root? "(" : "";
+        foreach ($condition as $item) {
+          if (is_string($item)) {
+            if ($item == '&') {
+              $where .= " AND ";
+            } else {
+              $where .= " OR ";
+            }
+          } else {
+            $where .= $this->getConditionSql($item, false);
+          }
+        }
+        return $where .= !$root? ")" : "";
+      }
+    } else { // SQL's 'AND' or 'OR'
+      if ($condition == '&') {
+        return " AND ";
+      } else {
+        return " OR ";
       }
     }
     return NULL;
   }
 
-  public function getConditionSql($column, $operator, $value) {
-    $alias = NULL;
-    if (strpos($column, ".") === false) {
-      $alias = $this->getTableAliasFor($this->root);
-    } else {
-      $parts = explode(".", $column);
-      $alias = $this->getTableAliasFor($this->getRelationByRelationName($parts[0]));
-
-      if (!$alias) {
-        throw new Exception("Alias not found for " . $parts[0], 1);
-      }
-      $column = $parts[1];
-    }
-    if ($operator == "~") {
-      return $alias . "." . $column . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
-    }
-    if ($operator == "!=") {
-      return $alias . "." . $column . " <> " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
-    }
-    if ($operator == "~") {
-      return $alias . "." . $column . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
-    }
-    return $alias . "." . $column . " " . $operator . " " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
-  }
-
   public function getSql($meta) {
     $sql = "SELECT ";
 
-    $alias = $this->getTableAliasFor($this->getRoot());
+    $root_alias = $this->getTableAliasFor($this->getRoot());
 
     $fields = $this->getFields();
     $select_fields = array();
@@ -160,7 +167,7 @@ class Query {
     }
 
     $sql .= implode(", ", $select_fields);
-    $sql .= " FROM " . $this->getTable() . " AS " . $this->getTableAliasFor($this->getRoot());
+    $sql .= " FROM " . $this->getTable() . " AS " . $root_alias;
 
     foreach ($this->getJoins() as $join) {
       $join_sql = $this->getJoinSql($join, $meta);
@@ -171,34 +178,7 @@ class Query {
 
     if (is_array($this->conditions)) {
       $where .= " WHERE ";
-      foreach ($this->conditions as $condition) {
-        if (is_array($condition)) {
-          if (isset($condition["left"]) && isset($condition["right"])) { //condition
-            $where .= $this->getConditionSql($condition["left"], $condition["operator"], $condition["right"]);
-          } else { // parenthesis
-            $where .= "(";
-            $block = $condition;
-            foreach ($block as $subcondition) {
-              if (is_string($subcondition)) {
-                if ($condition == '&') {
-                  $where .= " AND ";
-                } else {
-                  $where .= " OR ";
-                }
-              } else {
-                $where .= $this->getConditionSql($subcondition["left"], $subcondition["operator"], $subcondition["right"]);
-              }
-            }
-            $where .= ")";
-          }
-        } else { // SQL's 'AND' or 'OR'
-          if ($condition == '&') {
-            $where .= " AND ";
-          } else {
-            $where .= " OR ";
-          }
-        }
-      }
+      $where .= $this->getConditionSql($this->conditions);
     }
 
     $sql .= $where;
@@ -209,14 +189,15 @@ class Query {
       $sql .= " SORT BY ";
     }
     for ($i = 0; $i < count($sort_by); $i++) {
+      $field = $sort_by[$i]["field"];
+      $alias = $this->getTableAliasFor($field);
       $sql .= $i? ", " : "";
-      $sql .= $sort_by[$i]["column"] . " " . ($sort_by[$i]["direction"] == "+"? "ASC" : "DESC");
+      $sql .= $alias . "."  . $field->getName() . " " . ($sort_by[$i]["direction"] == "+"? "ASC" : "DESC");
     }
 
     if (is_array($this->limit)) {
       $sql .= " LIMIT " . join(",", $this->limit);
     }
-
     return $sql;
   }
 
