@@ -155,7 +155,7 @@ class Node {
         if (empty($field["fields"]) && strpos($field["name"], ".") === false && $join == NULL) {
           $obj = new Field($meta, $field, $parent);
         } else { // relation
-          $obj = new Relation($meta, $field, $parent);
+          $obj = new Relation($meta, $field, $this);
         }
         $obj->setParent($this);
         $this->addChild($obj);
