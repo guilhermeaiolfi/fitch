@@ -9,23 +9,43 @@ class Meta {
   public function getPrimaryKey($table) {
     return array("id");
   }
-  public function getRelationConnections($relation_name){
-    return $this->meta[$relation_name]["foreign_keys"];
+  public function getRelationConnections($table, $relation){
+    return $this->meta[$table]["foreign_keys"][$relation];
   }
-  public function getTableNameFromRelation($relation_name) {
-    $connections = $this->getRelationConnections($relation_name);
-    if (!is_array($connections)) {
-      return $relation_name;
+  public function getPrimaryKeyName($relation) {
+    return $this->meta[$relation->getTable()]["primary_key"];
+  }
+  public function getTableNameFromRelation($parent_name, $relation_name) {
+    //echo $parent_name . "//" . $relation_name . "\n";
+    $join = $this->getRelationConnections($parent_name, $relation_name);
+    if (!$join) return NULL;
+    if (count($join) == 1) {
+      list($left, $right) = each($join);
+      list($table, $field) = explode(".", $right);
+      return $table;
     }
-    $last = array_pop($connections);
-    return explode(".", $last)[0];
+    list($left, $right) = each($join);
+    list($left, $right) = each($join);
+    list($table, $field) = explode(".", $right);
+    return $table;
   }
-  public function isManyToManyRelation($relation_name) {
-    return count($this->getRelationConnections($relation_name)) == 2;
+  public function isManyToMany($node) {
+    if ($node instanceof \fitch\fields\Relation) {
+      if ($node->getParent()) {
+        return count($this->getRelationConnections($node->getParent()->getName(), $node->getName())) == 2;
+      }
+      return true;
+    } else { //field
+      $relation = $node->getParent();
+      if ($relation->getParent() && $relation->isGenerated()) {
+        return count($this->getRelationConnections($relation->getParent()->getName(), $relation->getName())) == 2;
+      }
+    }
+    return false;
   }
 
-  public function getFields($relation_name) {
-    return $this->meta[$relation_name]["fields"];
+  public function getFields($table) {
+    return $this->meta[$table]["fields"];
   }
 }
 ?>

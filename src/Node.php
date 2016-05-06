@@ -111,42 +111,51 @@ class Node {
     return $this->name;
   }
 
-  public function __construct($meta, $data = null) {
+  public function __construct($meta, $data, $parent = NULL) {
     $this->setMeta($meta);
     $this->setGenerated(!!$data["generated"]);
     @$this->setName($data["name"]);
     @$this->setAlias($data["alias"]);
 
     $parts = explode(".", $data["name"]);
+
     $n = count($parts);
 
+    if (!$parent) {
+      $parent = $this;
+    }
+
     if ($n > 1) {
-      //echo "dsadsa";exit;
       $data["name"] = array_shift($parts);
-      $this->setName($data["name"]);
-      $this->setGenerated(true);
-      $this->setAlias(NULL);
-      $this->setVisible(false);
+      $data["generated"] = true;
       $data["fields"] = array(
           array(
             "name" => implode(".", $parts),
             "generated" => false,
+            //"parent" => $data,
             "alias" => $data["alias"],
             "fields" => $data["fields"]
           )
       );
+
+      $this->setName($data["name"]);
+      $this->setGenerated(true);
+      $this->setAlias(NULL);
+      $this->setVisible(false);
+      $parent = $this;
     }
-    //print_r($data);
 
 
     if (isset($data["fields"]) && is_array($data["fields"])) {
       foreach ($data["fields"] as $field) {
+        //$field["parent"] = $data;
         $obj = null;
 
-        if (empty($field["fields"]) && strpos($field["name"], ".") === false && $meta->getRelationConnections($data["name"] . "." . $field["name"]) == NULL) {
-          $obj = new Field($meta, $field);
+        $join = $meta->getRelationConnections($parent? $parent->getName() : NULL, $field["name"]);
+        if (empty($field["fields"]) && strpos($field["name"], ".") === false && $join == NULL) {
+          $obj = new Field($meta, $field, $parent);
         } else { // relation
-            $obj = new Relation($meta, $field);
+          $obj = new Relation($meta, $field, $parent);
         }
         $obj->setParent($this);
         $this->addChild($obj);

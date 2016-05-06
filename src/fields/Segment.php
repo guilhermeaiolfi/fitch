@@ -42,8 +42,8 @@ class Segment extends Relation {
     return NULL;
   }
 
-  public function __construct ($meta, $data = null) {
-    parent::__construct($meta, $data);
+  public function __construct ($meta, $data, $parent = NULL) {
+    parent::__construct($meta, $data, $parent);
 
     $this->conditions = $data["conditions"];
 

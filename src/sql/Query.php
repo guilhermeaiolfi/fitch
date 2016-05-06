@@ -47,17 +47,16 @@ class Query {
   }
 
   public function getTable() {
-    $parts = $this->getRoot()->getParts();
-    if ($this->getRoot()->hasDot()) {
-      return $parts[0];
-    }
     return $this->getRoot()->getName();
   }
 
   public function getJoinSql($join, $meta) {
+    //print_r($join->getRelation()->getName());exit;
     $relation = $join->getRelation();
     $parent = $relation->getParent();
-    $meta = $meta->getRelationConnections($parent->getName() . "." . $relation->getName());
+
+    $meta = $meta->getRelationConnections($parent->getName(), $relation->getName());
+
     if (count($meta) == 2) {
       return $this->getManyToManyJoin($join, $meta);
     }

@@ -6,33 +6,46 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
 {
   protected $meta = array(
     "schools" => array(
-      "fields" => array("id", "name")
+      "primary_key" => "id",
+      "fields" => array(
+        array("name" => "id"),
+        array("name" => "name")
+      ),
+      "foreign_keys" => array(
+        "director" => array("schools.director_id" => "users.id"),
+        "programs" => array(
+          "schools.id" => "school_program.school_id",
+          "school_program.program_id" => "programs.id"
+        ),
+        "departments" => array(
+          "schools.id" => "school_department.school_id",
+          "school_department.department_id" => "departments.id"
+        )
+      )
+    ),
+    "departments" => array(
+      "primary_key" => "id",
+      "fields" => array(
+        array("name" => "id"),
+        array("name" => "name")
+      ),
+      "foreign_keys" => array(
+        "schools" => array(
+          "departments.id" => "school_department.department_id",
+          "school_department.school_id" => "schools.id"
+        ),
+        "courses" => array(
+          "departments.id" => "department_course.departament_id",
+          "department_course.course_id" => "courses.id"
+        )
+      )
+    ),
+    "courses" => array(
+      "primary_key" => "id"
     ),
     "users" => array(
+      "primary_key" => "id",
       "fields" => array("id", "name")
-    ),
-    "schools.director" => array(
-      "foreign_keys" => array(
-        "schools.director_id" => "users.id"
-      )
-    ),
-    "schools.departments" => array(
-      "foreign_keys" => array(
-        "schools.id" => "school_department.school_id",
-        "school_department.department_id" => "departments.id"
-        )
-    ),
-    "schools.programs" => array(
-      "foreign_keys" => array(
-        "schools.id" => "school_program.school_id",
-        "school_program.program_id" => "programs.id"
-      )
-    ),
-    "departaments.courses" => array(
-      "foreign_keys" => array(
-        "departaments.id" => "departament_course.departament_id",
-        "departament_course.course_id" => "courses.id"
-      )
     )
   );
 
@@ -267,6 +280,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       $queries = $generator->getQueries();
       $sql = $queries[0]->getSql($meta);
 
+      //print_r($segment->getMapping(true));exit;
 
       $this->assertEquals($test["sql"], $sql, "SQL in OK in $key");
 

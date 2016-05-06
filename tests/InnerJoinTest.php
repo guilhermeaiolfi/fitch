@@ -8,48 +8,50 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
   protected $meta = array(
     "schools" => array(
+      "primary_key" => "id",
       "fields" => array(
         array("name" => "id"),
         array("name" => "name")
+      ),
+      "foreign_keys" => array(
+        "director" => array("schools.director_id" => "users.id"),
+        "programas" => array(
+          "schools.id" => "school_program.school_id",
+          "school_program.program_id" => "programs.id"
+        ),
+        "departments" => array(
+          "schools.id" => "school_department.school_id",
+          "school_department.department_id" => "departments.id"
+        ),
+        "courses" => array(
+          "schools.id" => "school_department.school_id",
+          "school_department.department_id" => "departments.id"
+        )
       )
     ),
     "departments" => array(
+      "primary_key" => "id",
       "fields" => array(
         array("name" => "id"),
         array("name" => "name")
+      ),
+      "foreign_keys" => array(
+        "schools" => array(
+          "departments.id" => "school_department.department_id",
+          "school_department.school_id" => "schools.id"
+        ),
+        "courses" => array(
+          "departments.id" => "department_course.departament_id",
+          "department_course.course_id" => "courses.id"
+        )
       )
+    ),
+    "courses" => array(
+      "primary_key" => "id"
     ),
     "users" => array(
+      "primary_key" => "id",
       "fields" => array("id", "name")
-    ),
-    "schools.director" => array(
-      "foreign_keys" => array(
-        "schools.director_id" => "users.id"
-      )
-    ),
-    "departments.schools" => array(
-      "foreign_keys" => array(
-        "departments.id" => "school_department.department_id",
-        "school_department.school_id" => "schools.id"
-        )
-    ),
-    "schools.departments" => array(
-      "foreign_keys" => array(
-        "schools.id" => "school_department.school_id",
-        "school_department.department_id" => "departments.id"
-        )
-    ),
-    "schools.programs" => array(
-      "foreign_keys" => array(
-        "schools.id" => "school_program.school_id",
-        "school_program.program_id" => "programs.id"
-      )
-    ),
-    "departments.courses" => array(
-      "foreign_keys" => array(
-        "departments.id" => "department_course.departament_id",
-        "department_course.course_id" => "courses.id"
-      )
     )
   );
 
@@ -107,7 +109,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
-    // print_r($segment);exit;
+    //print_r($segment->getMapping());exit;
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
@@ -115,7 +117,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
 
     $nested = $populator->getResult($rows);
-    //print_r($nested);
+    //print_r($nested);exit;
 
     $result = array (
       "schools" => array (
@@ -261,7 +263,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $generator = new \fitch\sql\SqlGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
-
+    //print_r($segment->getMapping(true));exit;
     $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
 
     $nested = $populator->getResult($rows);
