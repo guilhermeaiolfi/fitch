@@ -10,24 +10,13 @@ class Meta {
     return array("id");
   }
   public function getRelationConnections($table, $relation){
-    return $this->meta[$table]["foreign_keys"][$relation];
+    return $this->meta[$table]["foreign_keys"][$relation]["on"];
   }
   public function getPrimaryKeyName($relation) {
     return $this->meta[$relation->getTable()]["primary_key"];
   }
   public function getTableNameFromRelation($parent_name, $relation_name) {
-    //echo $parent_name . "//" . $relation_name . "\n";
-    $join = $this->getRelationConnections($parent_name, $relation_name);
-    if (!$join) return NULL;
-    if (count($join) == 1) {
-      list($left, $right) = each($join);
-      list($table, $field) = explode(".", $right);
-      return $table;
-    }
-    list($left, $right) = each($join);
-    list($left, $right) = each($join);
-    list($table, $field) = explode(".", $right);
-    return $table;
+    return $this->meta[$parent_name]["foreign_keys"][$relation_name]["table"];
   }
   public function isManyToMany($node) {
     if ($node instanceof \fitch\fields\Relation) {

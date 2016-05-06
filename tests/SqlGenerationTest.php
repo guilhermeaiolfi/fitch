@@ -12,14 +12,30 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
         array("name" => "name")
       ),
       "foreign_keys" => array(
-        "director" => array("schools.director_id" => "users.id"),
+        "director" => array(
+          "table" => "users",
+          "on" => array("schools.director_id" => "users.id")
+        ),
         "programs" => array(
-          "schools.id" => "school_program.school_id",
-          "school_program.program_id" => "programs.id"
+          "table" => "programs",
+          "on" => array(
+            "schools.id" => "school_program.school_id",
+            "school_program.program_id" => "programs.id"
+          )
         ),
         "departments" => array(
-          "schools.id" => "school_department.school_id",
-          "school_department.department_id" => "departments.id"
+          "table" => "departments",
+          "on" => array(
+            "schools.id" => "school_department.school_id",
+            "school_department.department_id" => "departments.id"
+          )
+        ),
+        "courses" => array(
+          "table" => "departments",
+          "on" => array(
+            "schools.id" => "school_department.school_id",
+            "school_department.department_id" => "departments.id"
+          )
         )
       )
     ),
@@ -31,12 +47,18 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       ),
       "foreign_keys" => array(
         "schools" => array(
-          "departments.id" => "school_department.department_id",
-          "school_department.school_id" => "schools.id"
+          "table" => "schools",
+          "on" => array(
+            "departments.id" => "school_department.department_id",
+            "school_department.school_id" => "schools.id"
+          )
         ),
         "courses" => array(
-          "departments.id" => "department_course.departament_id",
-          "department_course.course_id" => "courses.id"
+          "table" => "courses",
+          "on" => array(
+            "departments.id" => "department_course.departament_id",
+            "department_course.course_id" => "courses.id"
+          )
         )
       )
     ),
