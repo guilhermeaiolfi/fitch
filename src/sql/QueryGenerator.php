@@ -15,7 +15,7 @@ class QueryGenerator extends Generator {
 
   protected $cache = array();
 
-  public function createJoins($relation, $query) {
+  public function addJoins($relation, $query) {
     $meta = $this->getMeta();
     $connections = $meta->getRelationConnections($relation->getParent()->getName(), $relation->getName());
     $join_table = new \fitch\sql\Table();
@@ -92,7 +92,7 @@ class QueryGenerator extends Generator {
     while ($field = array_shift($fields)) {
       if ($field instanceof Relation) {
         if ($field->getParent() && $field != $relation) {
-          $this->createJoins($field, $query);
+          $this->addJoins($field, $query);
         }
 
         $children = $field->getChildren();
@@ -100,11 +100,7 @@ class QueryGenerator extends Generator {
           $fields[] = $child;
         }
       } else {
-        $sql_field = new \fitch\sql\Column();
-        $sql_field->setName($field->getName());
-        $sql_field->setAlias($field->getAlias());
-        $sql_field->setTable($this->getOrCreateTable($field));
-        $query->addField($sql_field);
+        $query->addField($this->getTableAliasFor($field) . "." . $field->getName());
       }
     }
     if ($relation instanceof Segment) {
@@ -113,12 +109,12 @@ class QueryGenerator extends Generator {
       $function = $relation->getFunction("sort");
       for($i = 0; $i < count($function); $i++) {
         $field = $function[$i]["field"];
-        $sql_field = new \fitch\sql\Column();
+        /*$sql_field = new \fitch\sql\Column();
         $sql_field->setName($field->getName());
         $sql_field->setAlias($field->getAlias());
-        $sql_field->setTable($this->getOrCreateTable($field->getParent()));
-        $function[$i]["field"] = $sql_field;
-        $query->addSortBy($function[$i]);
+        $sql_field->setTable($this->getOrCreateTable($field->getParent()));*/
+        $function[$i]["field"] = $this->getTableAliasFor($field->getParent()) . "." . $field->getName();
+        $query->addSortBy($function[$i]["field"], $function[$i]["direction"]);
       }
       if ($function = $relation->getFunction("limit")) {
         $query->limit($function["limit"], $function["offset"]);
@@ -160,6 +156,8 @@ class QueryGenerator extends Generator {
   function getTableAliasFor($node) {
     $table = "";
     if ($node instanceof Relation) {
+      $table = $node->getName();
+    } else if ($node instanceof \fitch\sql\Table) {
       $table = $node->getName();
     } else if ($node instanceof Field) {
       $table = $node->getParent()->getName();

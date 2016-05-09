@@ -17,7 +17,8 @@ class ManyQueryGenerator extends QueryGenerator {
 
   protected $queries = array();
 
-  public function createUpJoins($relation, $query) {
+  public function addUpJoins($relation, $query) {
+    //$query->join($this->)
     $meta = $this->getMeta();
     $connections = $meta->getRelationConnections($relation->getName(), $relation->getParent()->getName());
     $joins = array();
@@ -46,10 +47,16 @@ class ManyQueryGenerator extends QueryGenerator {
     list($join_table_name, $join_id) = explode(".", $keys[1]);
     list($relation_table_name, $relation_id) = explode(".", $connections[$keys[1]]);
 
-    $relation_table = $this->getOrCreateTable($relation->getParent());
-
-    $condition = $query->createParameterColumn($relation_table, $parent_id) . " = " . $query->createParameterColumn($join_table, $join_id);
-    $query->join($relation_table, $condition);
+    $table = NULL;
+    $parent = $relation->getParent();
+    if (!$this->queries[$parent->getName()]) {
+      $table = $this->generateQueryForManyRelation($parent);
+    }
+    $table->setName($parent->getName());
+    $table->setAlias($this->getTableAliasFor($table));
+    $this->queries[$parent->getName()] = $table;
+    $condition = $query->createParameterColumn($table, $parent_id) . " = " . $query->createParameterColumn($join_table, $join_id);
+    $query->join($table, $condition);
   }
 
   public function generateQueryForManyRelation ($relation) {
@@ -58,28 +65,28 @@ class ManyQueryGenerator extends QueryGenerator {
 
     $query = new Query();
     $root = $this->getOrCreateTable($relation);
-    $query->SetRoot($root);
+    $query->from($root);
 
-    $fields[] = $relation;
-    $parent = $relation;
-    while ($parent) {
-      if ($parent->getParent()) {
-        $this->createUpJoins($parent, $query);
+    $current = $relation;
+    while ($parent = $current->getParent()) {
+      if ($current->getParent()) {
+        $this->addUpJoins($current, $query);
       }
-      $parent = $parent->getParent();
+      $current = $current->getParent();
     }
 
     foreach ($relation->getChildren() as $field) {
       if (!$field instanceof Relation) {
-        $sql_field = new \fitch\sql\Column();
+        /*$sql_field = new \fitch\sql\Column();
         $sql_field->setName($field->getName());
         $sql_field->setAlias($field->getAlias());
-        $sql_field->setTable($this->getOrCreateTable($field));
-        $query->addField($sql_field);
+        $sql_field->setTable($this->getOrCreateTable($field));*/
+        $query->addField($this->getTableAliasFor($field) . "." . $field->getName());
       }
     }
     return $query;
   }
+
   public function generateQueryForRelation($relation) {
     $joins = array();
     $meta = $this->getMeta();
@@ -95,12 +102,16 @@ class ManyQueryGenerator extends QueryGenerator {
       if ($field instanceof Relation) {
         if ($field->getParent() && $field != $relation) {
           if ($field instanceof OneRelation) {
-            $joins = $this->createJoins($field);
-            foreach ($joins as $join) {
-              $query->addJoin($join);
-            }
+            $this->addJoins($field);
           } else {
-            $this->queries[] = $this->generateQueryForManyRelation($field);
+            $table = NULL;
+            if (!$this->queries[$field->getName()]) {
+              $table = $this->generateQueryForManyRelation($field);
+            }
+            $table->setName($field->getName());
+            $table->setAlias($this->getTableAliasFor($table));
+            $this->queries[$field->getName()] = $table;
+            //$query->join($table, "abc.a = rec.b", "INNER");
           }
         }
 
@@ -139,11 +150,11 @@ class ManyQueryGenerator extends QueryGenerator {
 
   public function getQueries() {
     $root = $this->getRoot();
-    $this->queries[] = $this->generateQueryForRelation($root);
-    /*foreach ($this->queries as $query) {
-      echo $query->getSql($root->getMeta()) . "\n";
+    $this->queries[$root->getName()] = $this->generateQueryForRelation($root);
+    foreach ($this->queries as $query) {
+      echo $query->getSql() . "\n";
     }
-    exit;*/
+    exit;
     return $this->queries;
   }
 

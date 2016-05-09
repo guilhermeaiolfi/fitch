@@ -15,6 +15,7 @@ class Query extends Table {
   protected $aliases = array();
   protected $conditions = NULL;
   protected $limit = NULL;
+  protected $cache = array("table" => array());
 
   public function setConditions($conditions) {
     $this->conditions = $conditions;
@@ -28,11 +29,58 @@ class Query extends Table {
     return $this->root = $root;
   }
 
+  public function findTable($alias) {
+    return $this->cache["table"][$alias];
+    foreach ($this->cache["table"] as $table) {
+      if ($alias == $table->getAlias()) {
+        return $table;
+      }
+    }
+    return NULL;
+  }
+
+  public function getOrCreateTable(){
+    $args = func_get_args();
+    if ($args[0] instanceof Table) {
+      $table = $this->findTable($args[0]->getAlias());
+      if (!$table) {
+        $table = new Table();
+        $table->setAlias($args[0]->getAlias());
+      }
+      if ($table->getName() && $table->getName() != $args[0]->getName()) {
+        throw new Exception("Same alias but different names for: " . $table->getAlias(), 1);
+      }
+      $table->setName($args[0]->getName());
+      return $table;
+    } else if (is_string($args[0])) {
+      $table = $this->findTable($args[0]);
+      if (!$table) {
+        $table = new Table();
+        $table->setAlias($args[0]);
+        $table->setName($args[0]);
+        $this->cache("table", $args[0], $table);
+      }
+      return $table;
+    } else if (is_array($args[0])) {
+      $keys = array_keys($args[0]);
+      $alias = $args[0][$keys[0]];
+      $name = $keys[0];
+      $table = $this->findTable($alias);
+      if (!$table) {
+        $table = new Table();
+        $table->setAlias($alias);
+        $table->setName($name);
+        $this->cache("table", $alias, $table);
+      }
+      return $table;
+    }
+    return NULL;
+  }
+
   /*
-    join(Table $table, string CONDITION);
     join(Join $join)
-    join(string $from, string $condition)
-    join(array $from, string $condition)
+    join(Table $table, string $condition, string $type);
+    join(array $from, string $condition, $string $type)
   */
   public function join() {
     $args = func_get_args();
@@ -44,15 +92,14 @@ class Query extends Table {
       $join = new JoinOne();
       $join->from($args[0]);
       $condition = $args[1];
-    } elseif (is_string($args[0])) {
-      $join = new JoinOne();
-      $table = new Table();
-      $table->from($args[0]);
     } else {
       $join = new JoinOne();
-      $join->from($args[0][0], $args[0][1]);
+      $join->from($this->getOrCreateTable($args[0]));
     }
     $condition = $args[1];
+    if ($args[2]) {
+      $join->setType($args[2]);
+    }
     $join->setCondition($condition);
     $this->addJoin($join);
     return $this;
@@ -81,12 +128,14 @@ class Query extends Table {
     }
   }
 
+  protected function cache($where, $key, $obj) {
+    if (!$key || !$obj || !$where) return;
+    return $this->cache[$where][$key] = $obj;
+  }
+
   public function from($root, $alias = NULL) {
     if (is_string($root)) {
-      $table = new Table();
-      $table->setName($root);
-      $table->setAlias($alias);
-      $this->root = $table;
+      $this->root = $this->getOrCreateTable(array($root => $alias));
     } else {
       $this->root = $root;
     }
@@ -98,7 +147,25 @@ class Query extends Table {
   }
 
   public function addField($field) {
-    $this->fields[] = $field;
+    if (is_string($field)) {
+      $parts = explode(".", $field);
+      $column = new Column();
+      $column->from($this->getOrCreateTable($parts[0]));
+      $column->setName($parts[1]);
+    } elseif (is_array($field)) {
+      $column = new Column();
+      $keys = array_keys($field);
+      $alias = $field[$keys[0]];
+      $name = $keys[0];
+      $parts = explode(".", $name);
+      $column->from($this->getOrCreateTable($parts[0]));
+      $column->setName($parts[1]);
+      $column->setAlias($alias);
+    } else if ($field instanceof Column) {
+      $column = $field;
+    }
+    $this->fields[] = $column;
+    return $this;
   }
 
   public function setFields($fields) {
@@ -205,10 +272,10 @@ class Query extends Table {
       $sql .= " SORT BY ";
     }
     for ($i = 0; $i < count($sort_by); $i++) {
-      $field = $sort_by[$i]["field"];
-      $alias = $field->getTable()->getAlias();
+      $column = $sort_by[$i]["column"];
+      $alias = $column->getTable()->getAlias();
       $sql .= $i? ", " : "";
-      $sql .= $alias . "."  . $field->getName() . " " . ($sort_by[$i]["direction"] == "+"? "ASC" : "DESC");
+      $sql .= $alias . "."  . $column->getName() . " " . ($sort_by[$i]["direction"] == "+"? "ASC" : "DESC");
     }
 
     if (is_array($this->limit)) {
@@ -217,8 +284,14 @@ class Query extends Table {
     return $sql;
   }
 
-  function addSortBy($sort) {
-    $this->sort_by[] = $sort;
+  function addSortBy($field, $direction) {
+    if (is_string($field)) {
+      $column = new Column();
+      $parts = explode(".", $field);
+      $column->setName($parts[1]);
+      $column->from($this->getOrCreateTable($parts[0]));
+    }
+    $this->sort_by[] = array("column" => $column, "direction" => $direction);
   }
 
   function limit($limit, $offset) {

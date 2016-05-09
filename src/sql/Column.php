@@ -15,6 +15,24 @@ class Column {
     return $this->alias;
   }
 
+  public function from($root, $alias = NULL) {
+    if (is_array($root)) {
+      $table = new Table();
+      $keys = array_keys($root);
+      $table->setName($keys[0]);
+      $table->setAlias($root[$keys[0]]);
+      $this->table = $table;
+    } else if (is_string($root)) {
+      $table = new Table();
+      $table->setName($root);
+      $table->setAlias($alias);
+      $this->table = $table;
+    } else {
+      $this->table = $root;
+    }
+    return $this;
+  }
+
   public function setTable($table) {
     $this->table = $table;
   }
@@ -32,10 +50,8 @@ class Column {
   }
 
   public function getSql() {
-    return $this->getTable()->getAlias() . "." . $this->getName();
     return $this->getTable()->getAlias() . "." . $this->getName() . ($this->getAlias()? " AS " . $this->getAlias() : "");
   }
-
 }
 
 ?>
