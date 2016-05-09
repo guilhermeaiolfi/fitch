@@ -4,6 +4,7 @@ namespace fitch\sql;
 
 use \fitch\Generator as Generator;
 use \fitch\fields\Field as Field;
+use \fitch\sql\Column as Column;
 use \fitch\fields\Relation as Relation;
 use \fitch\fields\OneRelation as OneRelation;
 use \fitch\fields\ManyRelation as ManyRelation;
@@ -27,10 +28,10 @@ class QueryGenerator extends Generator {
         if ($first) {
           $join = new \fitch\sql\JoinOne();
 
-          $join->setJoinTable($join_table);
+          $join->setTable($join_table);
           
-          list($parent_table_name, $parent_field) = explode(".", $left);
-          list($join_table_name, $join_field) = explode(".", $right);
+          list($parent_table_name, $parent_id) = explode(".", $left);
+          list($join_table_name, $join_id) = explode(".", $right);
 
           $join_table->setName($join_table_name);
           $join_table->setAlias($this->getTableAliasFor($join));
@@ -38,27 +39,42 @@ class QueryGenerator extends Generator {
           
           $parent_table = $this->getOrCreateTable($relation->getParent());
 
-          $join->setParentTable($parent_table);
 
-          $join->setParentField($parent_field);
-          $join->setJoinField($join_field);
+          $parent_field = new Column();
+          $parent_field->setTable($parent_table);
+          $parent_field->setName($parent_id);
+
+          $join->setTable($join_table);
+
+          $join_field = new Column();
+          $join_field->setTable($join_table);
+          $join_field->setName($join_id);
+
+          $join->setCondition($join_field, "=", $parent_field);
+
 
           $joins[] = $join;
           $first = false;
 
         } else {
-          list($join_table_name, $parent_field) = explode(".", $left);
-          list($relation_table_name, $relation_field) = explode(".", $right);
+          list($join_table_name, $parent_id) = explode(".", $left);
+          list($relation_table_name, $relation_id) = explode(".", $right);
 
           $relation_table = $this->getOrCreateTable($relation);
 
           $join = new \fitch\sql\JoinOne();
 
-          $join->setJoinTable($relation_table);
-          $join->setParentTable($join_table);
+          $join->setTable($relation_table);
 
-          $join->setJoinField($relation_field);
-          $join->setParentField($parent_field);
+          $join_field = new Column();
+          $join_field->setName($relation_id);
+          $join_field->setTable($relation_table);
+
+          $parent_field = new Column();
+          $parent_field->setName($parent_id);
+          $parent_field->setTable($join_table);
+
+          $join->setCondition($join_field, "=", $parent_field);
 
           $joins[] = $join;
         }
@@ -66,22 +82,25 @@ class QueryGenerator extends Generator {
     } else if ($relation instanceof \fitch\fields\OneRelation) {
 
       list($left, $right) = each($connections);
-      list($parent_table_name, $parent_field) = explode(".", $right);
-      list($join_table_name, $join_field) = explode(".", $left);
-
-      $parent_alias = $this->getTableAliasFor($relation->getParent());
-      $join_alias = $this->getTableAliasFor($relation);
+      list($parent_table_name, $parent_id) = explode(".", $left);
+      list($join_table_name, $join_id) = explode(".", $right);
 
       $join_table = $this->getOrCreateTable($relation);
 
       $parent_table = $this->getOrCreateTable($relation->getParent());
 
       $join = new \fitch\sql\JoinOne();
-      $join->setParentTable($parent_table);
-      $join->setJoinTable($join_table);
+      $join->setTable($join_table);
 
-      $join->setParentField($join_field);
-      $join->setJoinField($parent_field);
+      $join_field = new Column();
+      $join_field->setName($join_id);
+      $join_field->setTable($join_table);
+
+      $parent_field = new Column();
+      $parent_field->setName($parent_id);
+      $parent_field->setTable($parent_table);
+
+      $join->setCondition($join_field, "=", $parent_field);
 
       $joins[] = $join;
     }
@@ -132,7 +151,7 @@ class QueryGenerator extends Generator {
           $fields[] = $child;
         }
       } else {
-        $sql_field = new \fitch\sql\Field();
+        $sql_field = new \fitch\sql\Column();
         $sql_field->setName($field->getName());
         $sql_field->setAlias($field->getAlias());
         $sql_field->setTable($this->getOrCreateTable($field));
@@ -145,7 +164,7 @@ class QueryGenerator extends Generator {
       $function = $relation->getFunction("sort");
       for($i = 0; $i < count($function); $i++) {
         $field = $function[$i]["field"];
-        $sql_field = new \fitch\sql\Field();
+        $sql_field = new \fitch\sql\Column();
         $sql_field->setName($field->getName());
         $sql_field->setAlias($field->getAlias());
         $sql_field->setTable($this->getOrCreateTable($field->getParent()));
@@ -163,7 +182,7 @@ class QueryGenerator extends Generator {
   public function replaceFieldWithFieldsSql($condition) {
     if (is_array($condition)) {
       if (isset($condition["field"])) { //condition
-        $field = new \fitch\sql\Field();
+        $field = new \fitch\sql\Column();
         $field->setName($condition["field"]->getName());
         $field->setAlias($condition["field"]->getAlias());
         $field->setTable($this->getOrCreateTable($condition["field"]->getParent()));
@@ -197,7 +216,7 @@ class QueryGenerator extends Generator {
       $table = $node->getParent()->getName();
       $node = $node->getParent();
     } else if ($node instanceof \fitch\sql\Join) {
-      $table = $node->getJoinTable()->getName();
+      $table = $node->getTable()->getName();
       return $this->registerAliasFor($table, $node);
     }
     $alias = $this->registerAliasFor($table, $node);

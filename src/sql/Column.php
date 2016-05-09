@@ -2,11 +2,11 @@
 
 namespace fitch\sql;
 
-class Field {
+class Column {
   public $alias = null;
   public $name = null;
   public $table = null;
-  
+
   public function setAlias($alias) {
     $this->alias = $alias;
   }
