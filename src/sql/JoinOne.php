@@ -3,9 +3,7 @@
 namespace fitch\sql;
 
 class JoinOne extends Join {
-  public $table = null;
   public $conditions = "";
-  public $type = "INNER";
   public $params = NULL;
 
   public function getType() {
@@ -16,22 +14,14 @@ class JoinOne extends Join {
     $this->type = $type;
   }
 
-  public function setTable($table) {
-    $this->table = $table;
-  }
-
-  public function getTable() {
-    return $this->table;
-  }
-
   public function getSql() {
     $table = $this->getTable();
 
-    return " " . $this->getType() . " JOIN " . $table->getSql() . " " . $table->getAlias() . " ON " . $this->condition;
+    return " " . $this->getType() . " JOIN " . $table->getSql() . " " . $table->getAlias() . " ON (" . $this->condition . ")";
   }
 
-  public function setCondition($left_field, $op, $right_field) {
-    $this->condition = "(" . $left_field->getTable()->getAlias() . "." . $left_field->getName() . " $op " . $right_field->getTable()->getAlias() . "." . $right_field->getName() . ")";
+  public function setCondition($condition) {
+    $this->condition = $condition;
   }
 }
 

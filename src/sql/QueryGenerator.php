@@ -15,103 +15,58 @@ class QueryGenerator extends Generator {
 
   protected $cache = array();
 
-  public function createJoins($relation) {
+  public function createJoins($relation, $query) {
     $meta = $this->getMeta();
     $connections = $meta->getRelationConnections($relation->getParent()->getName(), $relation->getName());
-    $joins = array();
     $join_table = new \fitch\sql\Table();
 
+    $keys = array_keys($connections);
     if ($relation instanceof \fitch\fields\ManyRelation) {
-      $first = true;
-      foreach ($connections as $left => $right) {
+      $join = new \fitch\sql\JoinOne();
 
-        if ($first) {
-          $join = new \fitch\sql\JoinOne();
+      $join->from($join_table);
 
-          $join->setTable($join_table);
-          
-          list($parent_table_name, $parent_id) = explode(".", $left);
-          list($join_table_name, $join_id) = explode(".", $right);
+      list($parent_table_name, $parent_id) = explode(".", $keys[0]);
+      list($join_table_name, $join_id) = explode(".", $connections[$keys[0]]);
 
-          $join_table->setName($join_table_name);
-          $join_table->setAlias($this->getTableAliasFor($join));
+      $join_table->setName($join_table_name);
+      $join_table->setAlias($this->getTableAliasFor($join));
 
-          
-          $parent_table = $this->getOrCreateTable($relation->getParent());
+      $parent_table = $this->getOrCreateTable($relation->getParent());
 
+      $join->setCondition($query->createParameterColumn($join_table, $join_id) . " = " . $query->createParameterColumn($parent_table, $parent_id));
 
-          $parent_field = new Column();
-          $parent_field->setTable($parent_table);
-          $parent_field->setName($parent_id);
+      $query->join($join);
 
-          $join->setTable($join_table);
+      /* SECOND PART */
+      list($join_table_name, $parent_id) = explode(".", $keys[1]);
+      list($relation_table_name, $relation_id) = explode(".", $connections[$keys[1]]);
 
-          $join_field = new Column();
-          $join_field->setTable($join_table);
-          $join_field->setName($join_id);
+      $relation_table = $this->getOrCreateTable($relation);
 
-          $join->setCondition($join_field, "=", $parent_field);
+      $condition = $query->createParameterColumn($relation_table, $relation_id) . " = " . $query->createParameterColumn($join_table, $parent_id);
 
-
-          $joins[] = $join;
-          $first = false;
-
-        } else {
-          list($join_table_name, $parent_id) = explode(".", $left);
-          list($relation_table_name, $relation_id) = explode(".", $right);
-
-          $relation_table = $this->getOrCreateTable($relation);
-
-          $join = new \fitch\sql\JoinOne();
-
-          $join->setTable($relation_table);
-
-          $join_field = new Column();
-          $join_field->setName($relation_id);
-          $join_field->setTable($relation_table);
-
-          $parent_field = new Column();
-          $parent_field->setName($parent_id);
-          $parent_field->setTable($join_table);
-
-          $join->setCondition($join_field, "=", $parent_field);
-
-          $joins[] = $join;
-        }
-      }
+      $query->join($relation_table, $condition);
     } else if ($relation instanceof \fitch\fields\OneRelation) {
 
-      list($left, $right) = each($connections);
-      list($parent_table_name, $parent_id) = explode(".", $left);
-      list($join_table_name, $join_id) = explode(".", $right);
+      list($parent_table_name, $parent_id) = explode(".", $keys[0]);
+      list($join_table_name, $join_id) = explode(".", $connections[$keys[0]]);
 
       $join_table = $this->getOrCreateTable($relation);
 
       $parent_table = $this->getOrCreateTable($relation->getParent());
 
-      $join = new \fitch\sql\JoinOne();
-      $join->setTable($join_table);
+      $condition = $query->createParameterColumn($join_table, $join_id) . " = " . $query->createParameterColumn($parent_table, $parent_id);
 
-      $join_field = new Column();
-      $join_field->setName($join_id);
-      $join_field->setTable($join_table);
-
-      $parent_field = new Column();
-      $parent_field->setName($parent_id);
-      $parent_field->setTable($parent_table);
-
-      $join->setCondition($join_field, "=", $parent_field);
-
-      $joins[] = $join;
+      $query->join($join_table, $condition);
     }
-    return $joins;
   }
 
   public function getOrCreateTable($field) {
     $id = spl_object_hash($field);
     if ($this->cache[$id]) {
       return $this->cache[$id];
-    } 
+    }
     if ($field instanceof \fitch\fields\Relation) {
       $table = new \fitch\sql\Table();
       $table->setName($field->getTable());
@@ -131,21 +86,15 @@ class QueryGenerator extends Generator {
     $meta = $this->getMeta();
 
     $query = new Query();
-    $root = new \fitch\sql\Table();
-    $root->setName($relation->getName());
-    $root->setAlias($this->getTableAliasFor($relation));
-    $query->setRoot($root);
+    $query->from($this->getOrCreateTable($relation));
     $fields[] = $relation;
 
     while ($field = array_shift($fields)) {
       if ($field instanceof Relation) {
         if ($field->getParent() && $field != $relation) {
-          $joins = $this->createJoins($field);
-          foreach ($joins as $join) {
-            $query->addJoin($join);
-          }
+          $this->createJoins($field, $query);
         }
-        
+
         $children = $field->getChildren();
         foreach ($children as $child) {
           $fields[] = $child;

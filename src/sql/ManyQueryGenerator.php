@@ -17,68 +17,39 @@ class ManyQueryGenerator extends QueryGenerator {
 
   protected $queries = array();
 
-  public function createUpJoins($relation) {
+  public function createUpJoins($relation, $query) {
     $meta = $this->getMeta();
     $connections = $meta->getRelationConnections($relation->getName(), $relation->getParent()->getName());
     $joins = array();
     $join_table = new \fitch\sql\Table();
 
-    $first = true;
-    foreach ($connections as $left => $right) {
+    $keys = array_keys($connections);
 
-      if ($first) {
-        $join = new \fitch\sql\JoinOne();
+    $join = new \fitch\sql\JoinOne();
 
-        $join->setTable($join_table);
-        
-        list($parent_table_name, $parent_id) = explode(".", $left);
-        list($join_table_name, $join_id) = explode(".", $right);
+    $join->from($join_table);
 
-        $join_table->setName($join_table_name);
-        $join_table->setAlias($this->getTableAliasFor($join));
+    list($parent_table_name, $parent_id) = explode(".", $keys[0]);
+    list($join_table_name, $join_id) = explode(".", $connections[$keys[0]]);
 
-        
-        $parent_table = $this->getOrCreateTable($relation);
+    $join_table->setName($join_table_name);
+    $join_table->setAlias($this->getTableAliasFor($join));
 
-        $parent_field = new Column();
-        $parent_field->setTable($parent_table);
-        $parent_field->setName($parent_id);
+    $parent_table = $this->getOrCreateTable($relation);
 
-        $join_field = new Column();
-        $join_field->setTable($join_table);
-        $join_field->setName($join_id);
+    $condition = $query->createParameterColumn($join_table, $join_id) . " = " . $query->createParameterColumn($parent_table, $parent_id);
+    $join->setCondition($condition);
 
-        $join->setTable($join_table);
+    $query->join($join);
 
-        $join->setCondition($join_field, "=", $parent_field);
+    /* SECOND PART */
+    list($join_table_name, $join_id) = explode(".", $keys[1]);
+    list($relation_table_name, $relation_id) = explode(".", $connections[$keys[1]]);
 
-        $joins[] = $join;
-        $first = false;
+    $relation_table = $this->getOrCreateTable($relation->getParent());
 
-      } else {
-        list($join_table_name, $join_id) = explode(".", $left);
-        list($relation_table_name, $relation_id) = explode(".", $right);
-
-        $relation_table = $this->getOrCreateTable($relation->getParent());
-
-        $join = new \fitch\sql\JoinOne();
-
-        $join_field = new Column();
-        $join_field->setTable($join_table);
-        $join_field->setName($join_id);
-
-        $join->setTable($relation_table);
-
-        $relation_field = new Column();
-        $relation_field->setTable($relation_table);
-        $relation_field->setName($parent_id);
-
-        $join->setCondition($relation_field, "=", $join_field);
-
-        $joins[] = $join;
-      }
-    }
-    return $joins;
+    $condition = $query->createParameterColumn($relation_table, $parent_id) . " = " . $query->createParameterColumn($join_table, $join_id);
+    $query->join($relation_table, $condition);
   }
 
   public function generateQueryForManyRelation ($relation) {
@@ -93,10 +64,7 @@ class ManyQueryGenerator extends QueryGenerator {
     $parent = $relation;
     while ($parent) {
       if ($parent->getParent()) {
-        $joins = $this->createUpJoins($parent);
-        foreach ($joins as $join) {
-          $query->addJoin($join);
-        }
+        $this->createUpJoins($parent, $query);
       }
       $parent = $parent->getParent();
     }
@@ -110,8 +78,6 @@ class ManyQueryGenerator extends QueryGenerator {
         $query->addField($sql_field);
       }
     }
-   
-
     return $query;
   }
   public function generateQueryForRelation($relation) {
@@ -137,7 +103,7 @@ class ManyQueryGenerator extends QueryGenerator {
             $this->queries[] = $this->generateQueryForManyRelation($field);
           }
         }
-        
+
         $children = $field->getChildren();
         foreach ($children as $child) {
           $fields[] = $child;

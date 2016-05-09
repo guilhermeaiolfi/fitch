@@ -2,9 +2,11 @@
 
 namespace fitch\sql;
 
-use \fitch\Fields\Field as Field;
-use \fitch\Fields\Relation as Relation;
-use \fitch\Fields\Segment as Segment;
+use \fitch\sql\Column as Column;
+use \fitch\sql\Join as Join;
+use \fitch\sql\JoinOne as JoinOne;
+use \fitch\sql\Table as Table;
+
 
 class Query {
   protected $joins = array();
@@ -24,6 +26,71 @@ class Query {
 
   public function setRoot($root) {
     return $this->root = $root;
+  }
+
+  /*
+    join(Table $table, string CONDITION);
+    join(Join $join)
+    join(string $from, string $condition)
+    join(array $from, string $condition)
+  */
+  public function join() {
+    $args = func_get_args();
+    $join = null;
+    if ($args[0] instanceof Join) {
+      $this->addJoin($args[0]);
+      return $this;
+    } elseif ($args[0] instanceof Table) {
+      $join = new JoinOne();
+      $join->from($args[0]);
+      $condition = $args[1];
+    } elseif (is_string($args[0])) {
+      $join = new JoinOne();
+      $table = new Table();
+      $table->from($args[0]);
+    } else {
+      $join = new JoinOne();
+      $join->from($args[0][0], $args[0][1]);
+    }
+    $condition = $args[1];
+    $join->setCondition($condition);
+    $this->addJoin($join);
+    return $this;
+  }
+
+  /*
+   createParameterColumn(Column $column)
+   createParameterColumn(Table $table, $column_name)
+   createParameterColumn(array(table_name => alias), $column_name)
+   createParameterColumn(array(table_name => alias), array(column_name => column_alias))
+  */
+  public function createParameterColumn() {
+    $args = func_get_args();
+    if ($args[0] instanceof Column) {
+      return $args[0]->getTable()->getName() . "." . $args[0]->getName();
+    } elseif ($args[0] instanceof Table) {
+      return $args[0]->getAlias() . "." . $args[1];
+    } elseif (is_string($args[0])) {
+      return $args[0] . '.' . $args[1];
+    }
+    $table_keys = array_keys($args[0]);
+    if (is_array($args[1])) {
+      return $args[0][$table_keys[0]] . "." . $args[1][$column_keys[0]];
+    } else {
+      return $args[0][$table_keys[0]] . "." . $args[1];
+    }
+  }
+
+  public function from($root, $alias = NULL) {
+    if (is_string($root)) {
+      $table = new Table();
+      $table->setName($root);
+      $table->setAlias($alias);
+      $this->root = $table;
+    } else {
+      $this->root = $root;
+    }
+    return $this;
   }
 
   public function addJoin($join) {
