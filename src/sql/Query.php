@@ -8,7 +8,7 @@ use \fitch\sql\JoinOne as JoinOne;
 use \fitch\sql\Table as Table;
 
 
-class Query {
+class Query extends Table {
   protected $joins = array();
   protected $fields = array();
   protected $sort_by = array();
@@ -171,7 +171,7 @@ class Query {
     return NULL;
   }
 
-  public function getSql($meta) {
+  public function getSql() {
     $sql = "SELECT ";
 
     $root_alias = $this->getRoot()->getAlias();
