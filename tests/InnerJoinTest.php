@@ -90,7 +90,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
 
-    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
@@ -128,7 +128,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
     //print_r($segment->getMapping());exit;
-    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
@@ -165,7 +165,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
     //print_r($segment);exit;
-    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
@@ -200,7 +200,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
     //print_r($segment->getMapping());exit;
-    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
@@ -208,7 +208,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $nested = $populator->getResult($rows);
 
-    $sql_expected = "SELECT schools_0.id, departments_0.id FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) WHERE departments_0.id = 1";
+    $sql_expected = "SELECT schools_0.id, departments_0.id FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN departments departments_0 ON (departments_0.id = school_department_0.department_id) WHERE departments_0.id = 1";
 
     $this->assertEquals($sql_expected, $sql);
 
@@ -239,7 +239,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
     //print_r($segment);exit;
-    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
@@ -247,7 +247,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $nested = $populator->getResult($rows);
 
-    $sql_expected = "SELECT schools_0.id, departments_0.id, courses_0.id FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) INNER JOIN department_course departments_courses_0 ON (departments_courses_0.departament_id = departments_0.id)  INNER JOIN courses courses_0 ON (courses_0.id = departments_courses_0.course_id)";
+    $sql_expected = "SELECT schools_0.id, departments_0.id, courses_0.id FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN departments departments_0 ON (departments_0.id = school_department_0.department_id) INNER JOIN department_course department_course_0 ON (department_course_0.departament_id = departments_0.id) INNER JOIN courses courses_0 ON (courses_0.id = department_course_0.course_id)";
 
     $this->assertEquals($sql_expected, $sql);
 
@@ -278,7 +278,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
 
-    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
     //print_r($segment->getMapping(true));exit;
@@ -286,7 +286,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $nested = $populator->getResult($rows);
 
-    $sql_expected = "SELECT schools_0.id, schools_0.name, courses_0.id FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id) INNER JOIN department_course departments_courses_0 ON (departments_courses_0.departament_id = departments_0.id)  INNER JOIN courses courses_0 ON (courses_0.id = departments_courses_0.course_id)";
+    $sql_expected = "SELECT schools_0.id, schools_0.name, courses_0.id FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN departments departments_0 ON (departments_0.id = school_department_0.department_id) INNER JOIN department_course department_course_0 ON (department_course_0.departament_id = departments_0.id) INNER JOIN courses courses_0 ON (courses_0.id = department_course_0.course_id)";
 
     $this->assertEquals($sql_expected, $sql);
 
@@ -311,7 +311,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
 
-    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
 
     $relation = NULL;
     $children = $segment->getChildren();
@@ -324,7 +324,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $query = $generator->generateQueryForRelation($relation);
     $sql = $query->getSql($meta);
 
-    $sql_expected = "SELECT courses_0.id FROM departments AS departments_0 INNER JOIN department_course departments_courses_0 ON (departments_courses_0.departament_id = departments_0.id)  INNER JOIN courses courses_0 ON (courses_0.id = departments_courses_0.course_id)";
+    $sql_expected = "SELECT courses_0.id FROM departments AS departments_0 INNER JOIN department_course department_course_0 ON (department_course_0.departament_id = departments_0.id) INNER JOIN courses courses_0 ON (courses_0.id = department_course_0.course_id)";
 
     $this->assertEquals($sql_expected, $sql);
   }
@@ -340,7 +340,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
-    $generator = new \fitch\sql\SqlGenerator($segment, $meta);
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
 
     $relation = NULL;
     $children = $segment->getChildren();
@@ -353,7 +353,46 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
-    $sql_expected = "SELECT schools_0.id, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department schools_departments_0 ON (schools_departments_0.school_id = schools_0.id)  INNER JOIN departments departments_0 ON (departments_0.id = schools_departments_0.department_id)";
+    $sql_expected = "SELECT schools_0.id, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN departments departments_0 ON (departments_0.id = school_department_0.department_id)";
+
+    $this->assertEquals($sql_expected, $sql);
+
+    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+
+    $rows = array (
+      array(1, 2, "Department #1"),
+      array(2, 3, "Department #2")
+    );
+
+    $nested = $populator->getResult($rows);
+
+    $result = array (
+      "schools.departments" => array (
+        0 => array("id" => 2, "name" => "Department #1"),
+        1 => array("id" => 3, "name" => "Department #2")
+      )
+    );
+
+    $this->assertEquals($result, $nested);
+  }
+
+  public function testManyRelationAsSeparatedSql()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $ql = "/schools{departments}";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($meta, $segment);
+    $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
+
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+
+    $sql_expected = "SELECT schools_0.id, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN departments departments_0 ON (departments_0.id = school_department_0.department_id)";
 
     $this->assertEquals($sql_expected, $sql);
 

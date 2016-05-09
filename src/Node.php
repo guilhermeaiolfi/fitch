@@ -4,7 +4,8 @@ namespace fitch;
 
 use \fitch\fields\Field as Field;
 use \fitch\fields\Relation as Relation;
-use \fitch\fields\SoftRelation as SoftRelation;
+use \fitch\fields\OneRelation as OneRelation;
+use \fitch\fields\ManyRelation as ManyRelation;
 use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class Node {
@@ -121,7 +122,7 @@ class Node {
 
     $n = count($parts);
 
-    if (!$parent) {
+    if (!$parent) { // it is the segment itself
       $parent = $this;
     }
 
@@ -155,7 +156,13 @@ class Node {
         if (empty($field["fields"]) && strpos($field["name"], ".") === false && $join == NULL) {
           $obj = new Field($meta, $field, $parent);
         } else { // relation
-          $obj = new Relation($meta, $field, $this);
+          $parts = explode(".", $field["name"]);
+          $join = $meta->getRelationConnections($parent->getName(), $parts[0]);
+          if (count($join) == 2) {
+            $obj = new ManyRelation($meta, $field, $this);
+          } else {
+            $obj = new OneRelation($meta, $field, $this);
+          }
         }
         $obj->setParent($this);
         $this->addChild($obj);

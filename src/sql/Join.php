@@ -1,6 +1,6 @@
 <?php
 
-namespace fitch;
+namespace fitch\sql;
 
 class Join {
   public $table = null;
@@ -55,6 +55,10 @@ class Join {
 
   public function setConditions() {
     return $this->conditions;
+  }
+
+  public function getSql() {
+    return "";
   }
 
 }

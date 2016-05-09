@@ -63,70 +63,22 @@ class Query {
     return $this->getOneToManyJoin($join, $meta);
   }
 
-  public function getManyToManyJoin($join, $meta) {
-
-    $joins = array();
-    $first = true;
-
-    $relation = $join->getRelation();
-    $parent = $relation->getParent();
-
-    $relation_alias = $this->getTableAliasFor($relation);
-    $parent_alias = $this->getTableAliasFor($parent);
-    $join_alias = $this->getTableAliasFor($join);
-
-    foreach ($meta as $left => $right) {
-
-      if ($first) {
-        list($parent_table, $parent_id) = explode(".", $left);
-        list($join_table, $join_parent_id) = explode(".", $right);
-
-        $joins[] = " " . $join->getType() . " JOIN $join_table " . $join_alias . " ON (" . $join_alias . "." . $join_parent_id . " = " . $parent_alias . "." . $parent_id . ")";
-        $first = false;
-
-      } else {
-        list($join_table, $join_parent_id) = explode(".", $left);
-        list($relation_table, $relation_id) = explode(".", $right);
-
-        $joins[] = " " . $join->getType() . " JOIN $relation_table " . $relation_alias . " ON (" . $relation_alias . "." . $relation_id . " = " . $join_alias . "." . $join_parent_id . ")";
-      }
-
-    }
-    return implode(" ", $joins);
-  }
-
-  public function getOneToManyJoin($join, $meta) {
-    list($left, $right) = each($meta);
-    list($left_table, $left_field) = explode(".", $right);
-    list($right_table, $right_field) = explode(".", $left);
-
-
-    $left_relation = $join->getRelation();
-    $right_relation = $join->getRelation();
-
-    $parent_table = $this->getTableAliasFor($join->getRelation()->getParent());
-    $join_table = $this->getTableAliasFor($right_relation);
-
-    return " " . $join->getType() . " JOIN $left_table " . $join_table . " ON (" . $parent_table . "." . $right_field . " = " . $join_table . "." . $left_field . ")";
-  }
-
   public function getConditionSql($condition, $root = true) {
     if (is_array($condition)) {
       if (isset($condition["field"]) && isset($condition["value"])) { //condition
         $field = $condition["field"];
         $operator = $condition["operator"];
         $value = $condition["value"];
-        $alias = $this->getTableAliasFor($field->getParent());
         if ($operator == "~") {
-          return $alias . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+          return $field->getTable()->getAlias() . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
         }
         if ($operator == "!=") {
-          return $alias . "." . $field->getName() . " <> " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+          return $field->getTable()->getAlias() . "." . $field->getName() . " <> " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
         }
         if ($operator == "~") {
-          return $alias . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+          return $field->getTable()->getAlias() . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
         }
-        return $alias . "." . $field->getName() . " " . $operator . " " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+        return $field->getTable()->getAlias() . "." . $field->getName() . " " . $operator . " " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
       } else { // parenthesis
         $where = !$root? "(" : "";
         foreach ($condition as $item) {
@@ -155,24 +107,20 @@ class Query {
   public function getSql($meta) {
     $sql = "SELECT ";
 
-    $root_alias = $this->getTableAliasFor($this->getRoot());
+    $root_alias = $this->getRoot()->getAlias();
 
     $fields = $this->getFields();
     $select_fields = array();
     for ($i = 0; $i < count($fields); $i++) {
       $field = $fields[$i];
-      $alias = $this->getTableAliasFor($field);
-      $select_fields[] = $alias . "." . $field->getName();
+      $select_fields[] = $field->getSql();
     }
 
     $sql .= implode(", ", $select_fields);
     $sql .= " FROM " . $this->getTable() . " AS " . $root_alias;
 
     foreach ($this->getJoins() as $join) {
-      if ($join->getRelation() != $this->getRoot()) {
-        $join_sql = $this->getJoinSql($join, $meta);
-        $sql .= $join_sql;
-      }
+      $sql .= $join->getSql();
     }
 
     $where = "";
@@ -191,7 +139,7 @@ class Query {
     }
     for ($i = 0; $i < count($sort_by); $i++) {
       $field = $sort_by[$i]["field"];
-      $alias = $this->getTableAliasFor($field);
+      $alias = $field->getTable()->getAlias();
       $sql .= $i? ", " : "";
       $sql .= $alias . "."  . $field->getName() . " " . ($sort_by[$i]["direction"] == "+"? "ASC" : "DESC");
     }
@@ -208,34 +156,6 @@ class Query {
 
   function limit($limit, $offset) {
     $this->limit = array($limit, $offset);
-  }
-
-  function getTableAliasFor($node) {
-    $table = "";
-    if ($node instanceof Relation) {
-      $table = $node->getName();
-    } else if ($node instanceof Field) {
-      $table = $node->getParent()->getName();
-      $node = $node->getParent();
-    } else if ($node instanceof \fitch\Join) {
-      $relation = $node->getRelation();
-      $table = $relation->getParent()->getName() . "_" . $relation->getName();
-      return $this->registerAliasFor($table, $node);
-    }
-    $alias = $this->registerAliasFor($table, $node);
-    return $alias;
-  }
-
-  public function registerAliasFor($table, $node) {
-    $n = 0;
-    while (isset($this->aliases[$table . "_" . $n])) {
-      if ($this->aliases[$table . "_" . $n] == $node) {
-        return $table . "_" . $n;
-      }
-      $n++;
-    }
-    $this->aliases[$table . "_" . $n] = $node;
-    return $table . "_" . $n;
   }
 }
 

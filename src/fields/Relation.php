@@ -11,7 +11,6 @@ class Relation extends \fitch\fields\Field {
     if (!$parent) {
       $this->setTable($this->getName());
     } else {
-      //echo $parent->getName() . "(" . $this->getName() . ")\n";
       $table = $this->getMeta()->getTableNameFromRelation($parent->getName(), $this->getName());
       if (!$table) {
         throw new \Exception("Relation: \"" . $this->getName() . "\" doesn't exist in table \"" . $parent->getName() . "\"", 1);
@@ -90,14 +89,6 @@ class Relation extends \fitch\fields\Field {
       $i++;
     }
     return -1;
-  }
-
-  public function getJoins() {
-
-    $join = new Join();
-    $join->setRelation($this);
-
-    return array($join);
   }
 
   public function hasPrimaryKey() {
