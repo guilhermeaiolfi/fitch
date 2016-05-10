@@ -85,22 +85,7 @@ class ManyQueryGenerator extends QueryGenerator {
       }
     }
 
-    $conditions = $this->replaceFieldWithFieldsSql($relation->getConditions());
-    $query->setConditions($conditions);
-    $function = $relation->getFunction("sort");
-    for($i = 0; $i < count($function); $i++) {
-      $field = $function[$i]["field"];
-      $sql_field = new \fitch\sql\Column();
-      $sql_field->setName($field->getName());
-      $sql_field->setAlias($field->getAlias());
-      $sql_field->setTable($this->getOrCreateTable($field->getParent()));
-      $function[$i]["field"] = $sql_field;
-      $query->addSortBy($function[$i]);
-    }
-    if ($function = $relation->getFunction("limit")) {
-      $query->limit($function["limit"], $function["offset"]);
-    }
-
+    $this->buildRest($relation, $query);
     return $query;
   }
 
@@ -141,20 +126,7 @@ class ManyQueryGenerator extends QueryGenerator {
         $query->addField($column);
       }
     }
-    $conditions = $this->replaceFieldWithFieldsSql($relation->getConditions());
-    $query->setConditions($conditions);
-    $function = $relation->getFunction("sort");
-    for($i = 0; $i < count($function); $i++) {
-      $field = $function[$i]["field"];
-      $column = new \fitch\sql\Column();
-      $column->setName($field->getName());
-      $column->setTable($this->alias_manager->getTableFromRelation($field->getParent()));
-      $function[$i]["field"] = $column;
-      $query->addSortBy($function[$i]["field"], $function[$i]["direction"]);
-    }
-    if ($function = $relation->getFunction("limit")) {
-      $query->limit($function["limit"], $function["offset"]);
-    }
+    $this->buildRest($relation, $query);
     return $query;
   }
 
@@ -163,7 +135,6 @@ class ManyQueryGenerator extends QueryGenerator {
     $this->queries[$root->getName()] = $this->generateQueryForRelation($root);
     return $this->queries;
   }
-
 }
 
 ?>

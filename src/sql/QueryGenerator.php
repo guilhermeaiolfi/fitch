@@ -110,25 +110,27 @@ class QueryGenerator extends Generator {
         $query->addField($column);
       }
     }
-    //exit;
-    if ($relation instanceof Segment) {
-      $conditions = $this->replaceFieldWithFieldsSql($relation->getConditions());
-      $query->setConditions($conditions);
-      $function = $relation->getFunction("sort");
-      for($i = 0; $i < count($function); $i++) {
-        $field = $function[$i]["field"];
-        $column = new \fitch\sql\Column();
-        $column->setName($field->getName());
-        $column->setTable($this->alias_manager->getTableFromRelation($field->getParent()));
-        $function[$i]["field"] = $column;
-        $query->addSortBy($function[$i]["field"], $function[$i]["direction"]);
-      }
-      if ($function = $relation->getFunction("limit")) {
-        $query->limit($function["limit"], $function["offset"]);
-      }
-    }
 
+    $this->buildRest($relation, $query);
     return $query;
+  }
+
+  public function buildRest($relation, $query) {
+    $conditions = $this->replaceFieldWithFieldsSql($relation->getConditions());
+    $query->setConditions($conditions);
+    $function = $relation->getFunction("sort");
+    for($i = 0; $i < count($function); $i++) {
+      $field = $function[$i]["field"];
+      $sql_field = new \fitch\sql\Column();
+      $sql_field->setName($field->getName());
+      $sql_field->setAlias($field->getAlias());
+      $sql_field->setTable($this->alias_manager->getTableFromRelation($field->getParent()));
+      $function[$i]["field"] = $sql_field;
+      $query->addSortBy($function[$i]["field"], $function[$i]["direction"]);
+    }
+    if ($function = $relation->getFunction("limit")) {
+      $query->limit($function["limit"], $function["offset"]);
+    }
   }
 
   public function replaceFieldWithFieldsSql($condition) {
