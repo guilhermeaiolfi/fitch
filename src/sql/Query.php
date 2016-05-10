@@ -128,6 +128,11 @@ class Query extends Table {
     }
   }
 
+  public function getLastJoin() {
+    $n = count($this->joins);
+    return $n? $this->joins[$n - 1] : NULL;
+  }
+
   protected function cache($where, $key, $obj) {
     if (!$key || !$obj || !$where) return;
     return $this->cache[$where][$key] = $obj;
@@ -212,6 +217,7 @@ class Query extends Table {
         if ($operator == "~") {
           return $field->getTable()->getAlias() . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
         }
+
         return $field->getTable()->getAlias() . "." . $field->getName() . " " . $operator . " " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
       } else { // parenthesis
         $where = !$root? "(" : "";
@@ -290,6 +296,8 @@ class Query extends Table {
       $parts = explode(".", $field);
       $column->setName($parts[1]);
       $column->from($this->getOrCreateTable($parts[0]));
+    } else {
+      $column = $field;
     }
     $this->sort_by[] = array("column" => $column, "direction" => $direction);
   }

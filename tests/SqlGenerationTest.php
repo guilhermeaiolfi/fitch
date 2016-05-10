@@ -14,10 +14,12 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       "foreign_keys" => array(
         "director" => array(
           "table" => "users",
+          "cardinality" => "one",
           "on" => array("schools.director_id" => "users.id")
         ),
         "programs" => array(
           "table" => "programs",
+          "cardinality" => "many",
           "on" => array(
             "schools.id" => "school_program.school_id",
             "school_program.program_id" => "programs.id"
@@ -25,16 +27,18 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
         ),
         "departments" => array(
           "table" => "departments",
+          "cardinality" => "many",
           "on" => array(
             "schools.id" => "school_department.school_id",
             "school_department.department_id" => "departments.id"
           )
         ),
         "courses" => array(
-          "table" => "departments",
+          "table" => "courses",
+          "cardinality" => "many",
           "on" => array(
-            "schools.id" => "school_department.school_id",
-            "school_department.department_id" => "departments.id"
+            "schools.id" => "school_course.school_id",
+            "school_course.course_id" => "courses.id"
           )
         )
       )
@@ -48,6 +52,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       "foreign_keys" => array(
         "schools" => array(
           "table" => "schools",
+          "cardinality" => "many",
           "on" => array(
             "departments.id" => "school_department.department_id",
             "school_department.school_id" => "schools.id"
@@ -55,6 +60,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
         ),
         "courses" => array(
           "table" => "courses",
+          "cardinality" => "many",
           "on" => array(
             "departments.id" => "department_course.departament_id",
             "department_course.course_id" => "courses.id"
@@ -281,7 +287,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
           array("name" => "director.id")
         )
       ),
-      "sql" => "SELECT schools_0.id, director_0.id FROM schools AS schools_0 INNER JOIN users director_0 ON (director_0.id = schools_0.director_id)",
+      "sql" => "SELECT schools_0.id, users_0.id FROM schools AS schools_0 INNER JOIN users users_0 ON (users_0.id = schools_0.director_id)",
     );
 
 

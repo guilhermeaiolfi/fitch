@@ -8,7 +8,7 @@ use \fitch\fields\SoftRelation as SoftRelation;
 class Field extends Node {
 
   public function isMany() {
-    return $this->getMeta()->isManyToMany($this);
+    return $this->getMeta()->isMany($this);
   }
 
   public function getFullname() {

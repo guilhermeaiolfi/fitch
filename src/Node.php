@@ -157,8 +157,8 @@ class Node {
           $obj = new Field($meta, $field, $parent);
         } else { // relation
           $parts = explode(".", $field["name"]);
-          $join = $meta->getRelationConnections($parent->getName(), $parts[0]);
-          if (count($join) == 2) {
+          $cardinality = $meta->getCardinality($parent->getName(), $parts[0]);
+          if ($cardinality == "many") {
             $obj = new ManyRelation($meta, $field, $this);
           } else {
             $obj = new OneRelation($meta, $field, $this);

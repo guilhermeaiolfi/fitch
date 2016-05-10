@@ -16,17 +16,19 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
       "foreign_keys" => array(
         "director" => array(
           "table" => "users",
+          "cardinality" => "one",
           "on" => array("schools.director_id" => "users.id")
         ),
         "programs" => array(
           "table" => "programs",
+          "cardinality" => "many",
           "on" => array(
-            "schools.id" => "school_program.school_id",
-            "school_program.program_id" => "programs.id"
+            "schools.id" => "programs.school_id"
           )
         ),
         "departments" => array(
           "table" => "departments",
+          "cardinality" => "many",
           "on" => array(
             "schools.id" => "school_department.school_id",
             "school_department.department_id" => "departments.id"
@@ -34,12 +36,16 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
         ),
         "courses" => array(
           "table" => "departments",
+          "cardinality" => "many",
           "on" => array(
             "schools.id" => "school_department.school_id",
             "school_department.department_id" => "departments.id"
           )
         )
       )
+    ),
+    "programs" => array(
+      "primary_key" => "id"
     ),
     "departments" => array(
       "primary_key" => "id",
@@ -50,6 +56,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
       "foreign_keys" => array(
         "schools" => array(
           "table" => "schools",
+          "cardinality" => "many",
           "on" => array(
             "departments.id" => "school_department.department_id",
             "school_department.school_id" => "schools.id"
@@ -57,6 +64,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
         ),
         "courses" => array(
           "table" => "courses",
+          "cardinality" => "many",
           "on" => array(
             "departments.id" => "department_course.departament_id",
             "department_course.course_id" => "courses.id"
@@ -72,6 +80,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
       "fields" => array("id", "name"),
       "foreign_keys" => array(
         "schools" => array(
+          "cardinality" => "many",
           "table" => "schools",
           "on" => array(
             "users.id" => "schools.director_id"
@@ -337,6 +346,45 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($sql_expected, $sql);
   }
 
+  public function testOneToMany()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $ql = "/schools{programs.id}";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($meta, $segment);
+    //print_r($segment->getMapping(true));exit;
+    $generator = new \fitch\sql\QueryGenerator($segment, $meta);
+
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+
+    $sql_expected = "SELECT schools_0.id, programs_0.id FROM schools AS schools_0 INNER JOIN programs programs_0 ON (programs_0.school_id = schools_0.id)";
+
+    $this->assertEquals($sql_expected, $sql);
+
+    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+
+    $rows = array (
+      array(1, 2),
+      array(1, 3)
+    );
+
+    $nested = $populator->getResult($rows);
+
+    $result = array (
+      "schools" => array (
+        0 => array("programs.id" => array(2, 3))
+      )
+    );
+
+    $this->assertEquals($result, $nested);
+  }
+
   public function testComposedSegment()
   {
     $meta = $this->meta;
@@ -391,18 +439,27 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $parser = new Parser();
 
-    $ql = "/schools{departments}";
+    $ql = "/schools{departments}?id=2";
 
     $segment = $parser->parse($ql);
     $segment = new \fitch\fields\Segment($meta, $segment);
     $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
 
     $queries = $generator->getQueries();
-    $sql = $queries[0]->getSql($meta);
+    $sql = array();
+    foreach ($queries as $key => $query) {
+      $sql[$key] = $queries[$key]->getSql($meta);
+      //echo $key . "=>" . $sql[$key];
+    }
 
-    $sql_expected = "SELECT departments_0.id, departments_0.name FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN schools schools_0 ON (schools_0.id = school_department_0.school_id)";
+    $sql_expected = array();
+    $sql_expected['departments'] = "SELECT departments_0.id, departments_0.name FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0 WHERE schools_0.id = 2) schools_1 ON (schools_1.id = school_department_0.school_id)";
 
-    $this->assertEquals($sql_expected, $sql);
+    $sql_expected['schools'] = "SELECT schools_0.id FROM schools AS schools_0 WHERE schools_0.id = 2";
+
+    foreach ($sql as $key => $item) {
+      $this->assertEquals($sql_expected[$key], $item);
+    }
 
     $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
 
