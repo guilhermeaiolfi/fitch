@@ -3,8 +3,9 @@
 namespace fitch\sql;
 
 class Table {
-  public $alias = null;
-  public $name = null;
+  protected $alias = null;
+  protected $name = null;
+  protected $columns = array();
 
   public function setAlias($alias) {
     $this->alias = $alias;
@@ -20,6 +21,21 @@ class Table {
 
   public function getName() {
     return $this->name;
+  }
+
+  public function setColumns($columns) {
+    $this->columns = $columns;
+  }
+
+  public function getColumns() {
+    return $this->columns;
+  }
+
+  public function removeColumn($column) {
+    if(($key = array_search($column, $this->columns, true)) !== FALSE) {
+        unset($this->columns[$key]);
+    }
+    return $this;
   }
 
   public function getSql() {

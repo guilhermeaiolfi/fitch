@@ -6,7 +6,7 @@ use \fitch\Join as Join;
 
 class Relation extends \fitch\fields\Field {
   protected $table = NULL;
-    protected $functions = array();
+  protected $functions = array();
   protected $conditions = NULL;
 
   public function getFunctions() {
@@ -101,6 +101,26 @@ class Relation extends \fitch\fields\Field {
     }
   }
 
+  public function getLeaves() {
+    $leaves = array();
+    foreach ($this->getChildren() as $child) {
+      if (!($child instanceof Relation)) {
+        $leaves[] = $child;
+      }
+    }
+    return $leaves;
+  }
+
+  public function getRelations() {
+    $relations = array();
+    foreach ($this->getChildren() as $child) {
+      if ($child instanceof Relation) {
+        $relations[] = $child;
+      }
+    }
+    return $relations;
+  }
+
   protected function hasVisibleFields() {
     foreach ($this->getChildren() as $child) {
       if ($child->isVisible()) {
@@ -151,7 +171,6 @@ class Relation extends \fitch\fields\Field {
     $nodes = $root->getListOf("\\fitch\\fields\\Field");
     $i = 0;
     foreach ($nodes as $node) {
-
       if ($node instanceof \fitch\fields\Relation) { continue; }
       if ($node->getParent() == $this && $node instanceof \fitch\fields\PrimaryKeyHash) { return $i; }
       $i++;

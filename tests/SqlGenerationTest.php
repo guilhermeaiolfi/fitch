@@ -309,7 +309,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
 
       $this->assertEquals($test["sql"], $sql, "SQL in OK in $key");
 
-      $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+      $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
       $nested = $populator->getResult($rows);
       if ($test["result"]) {

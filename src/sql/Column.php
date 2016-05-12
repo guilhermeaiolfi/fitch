@@ -6,6 +6,15 @@ class Column {
   public $alias = null;
   public $name = null;
   public $table = null;
+  public $primary_key = false;
+
+  public function setPrimaryKey($primary_key) {
+    $this->primary_key = $primary_key;
+  }
+
+  public function isPrimaryKey() {
+    return $this->primary_key;
+  }
 
   public function setAlias($alias) {
     $this->alias = $alias;

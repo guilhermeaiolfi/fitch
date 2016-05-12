@@ -21,6 +21,8 @@ class ManyQueryGenerator extends QueryGenerator {
 
   public function addUpJoins($relation, $query) {
     $meta = $this->getMeta();
+
+    //echo $relation->getName() . " = " . $relation->getParent()->getName();
     $connections = $meta->getRelationConnections($relation->getName(), $relation->getParent()->getName());
 
     $keys = array_keys($connections);
@@ -48,20 +50,41 @@ class ManyQueryGenerator extends QueryGenerator {
     list($join_table_name, $join_id) = explode(".", $keys[1]);
     list($relation_table_name, $relation_id) = explode(".", $connections[$keys[1]]);
 
-    $table = NULL;
     $parent = $relation->getParent();
-    if (!$this->queries[$parent->getName()]) {
+    $table = $this->queries[$parent->getName()];
+    if (!$table) {
+      //echo $relation->getName();
+      //echo get_class($this->generateQueryForManyRelation($parent));
       $table = $this->generateQueryForManyRelation($parent);
     }
+
     $table->setName($parent->getName());
     $table->setAlias($this->alias_manager->getTableAliasFor($table));
+
+    foreach ($table->getColumns() as $column) {
+      $primary_key = $this->getMeta()->getPrimaryKey($parent->getTable());
+      //echo $parent->getName() . "(" . $this->alias_manager->getTableAliasFor($table) . ") - " . $column->getTable()->getAlias() . "." . $column->getName() . "(" . $column->getAlias() . ") - " . $primary_key[0] . "\n";
+      if ($column->getName() == $primary_key[0] || $column->isPrimaryKey()) {
+        $query_column = clone $column;
+        //echo $column->getTable()->getAlias() . "_" . $column->getName();exit;
+        $query_column->setTable($table);
+        //$query_column->setPrimaryKey(true);
+        if ($column->getAlias()) {
+          $query_column->setName($column->getAlias());
+        }
+        $query_column->setAlias($table->getAlias() . "_" . ($column->getAlias()? $column->getAlias() : $column->getName()));
+        $query->addColumn($query_column);
+      } else {
+        $table->removeColumn($column);
+      }
+    }
+
     $this->queries[$parent->getName()] = $table;
     $condition = $query->createParameterColumn($table, $parent_id) . " = " . $query->createParameterColumn($join_table, $join_id);
     $query->join($table, $condition);
   }
 
   public function generateQueryForManyRelation ($relation) {
-    $joins = array();
     $meta = $this->getMeta();
 
     $query = new Query();
@@ -69,11 +92,8 @@ class ManyQueryGenerator extends QueryGenerator {
     $query->from($root);
 
     $current = $relation;
-    while ($parent = $current->getParent()) {
-      if ($current->getParent()) {
-        $this->addUpJoins($current, $query);
-      }
-      $current = $current->getParent();
+    if ($current->getParent()) {
+      $this->addUpJoins($current, $query);
     }
 
     foreach ($relation->getChildren() as $field) {
@@ -81,7 +101,7 @@ class ManyQueryGenerator extends QueryGenerator {
         $column = new \fitch\sql\Column();
         $column->setTable($this->alias_manager->getTableFromRelation($field->getParent()));
         $column->setName($field->getName());
-        $query->addField($column);
+        $query->addColumn($column);
       }
     }
 
@@ -115,15 +135,24 @@ class ManyQueryGenerator extends QueryGenerator {
         }
 
         $children = $field->getChildren();
+        $has_fields = false;
         foreach ($children as $child) {
+          if (!($child instanceof ManyRelation) && !($child instanceof PrimaryKeyHash)) {
+            $has_fields = true;
+          }
           $fields[] = $child;
         }
+
+        if (!$has_fields) {
+          $this->unset[] = $field->getName();
+        }
       } else if ($field->getParent() == $relation || $field->getParent() instanceof OneRelation) {
+      //TODO: one relation can be from a different branch than the one being constructed here
         $table = $this->alias_manager->getTableFromRelation($field->getParent());
         $column = new Column();
         $column->setTable($table);
         $column->setName($field->getName());
-        $query->addField($column);
+        $query->addColumn($column);
       }
     }
     $this->buildRest($relation, $query);
@@ -131,8 +160,12 @@ class ManyQueryGenerator extends QueryGenerator {
   }
 
   public function getQueries() {
+    $this->unset = array();
     $root = $this->getRoot();
     $this->queries[$root->getName()] = $this->generateQueryForRelation($root);
+    foreach ($this->unset as $key) {
+      unset($this->queries[$key]);
+    }
     return $this->queries;
   }
 }

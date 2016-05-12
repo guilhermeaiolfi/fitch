@@ -10,7 +10,6 @@ use \fitch\sql\Table as Table;
 
 class Query extends Table {
   protected $joins = array();
-  protected $fields = array();
   protected $sort_by = array();
   protected $aliases = array();
   protected $conditions = NULL;
@@ -151,34 +150,26 @@ class Query extends Table {
     $this->joins[] = $join;
   }
 
-  public function addField($field) {
-    if (is_string($field)) {
-      $parts = explode(".", $field);
-      $column = new Column();
-      $column->from($this->getOrCreateTable($parts[0]));
-      $column->setName($parts[1]);
-    } elseif (is_array($field)) {
-      $column = new Column();
-      $keys = array_keys($field);
-      $alias = $field[$keys[0]];
+  public function addColumn($column) {
+    if (is_string($column)) {
+      $parts = explode(".", $column);
+      $col = new Column();
+      $col->from($this->getOrCreateTable($parts[0]));
+      $col->setName($parts[1]);
+    } elseif (is_array($column)) {
+      $col = new Column();
+      $keys = array_keys($column);
+      $alias = $column[$keys[0]];
       $name = $keys[0];
       $parts = explode(".", $name);
-      $column->from($this->getOrCreateTable($parts[0]));
-      $column->setName($parts[1]);
-      $column->setAlias($alias);
-    } else if ($field instanceof Column) {
-      $column = $field;
+      $col->from($this->getOrCreateTable($parts[0]));
+      $col->setName($parts[1]);
+      $col->setAlias($alias);
+    } else if ($column instanceof Column) {
+      $col = $column;
     }
-    $this->fields[] = $column;
+    $this->columns[] = $col;
     return $this;
-  }
-
-  public function setFields($fields) {
-    $this->fields = $fields;
-  }
-
-  public function getFields() {
-    return $this->fields;
   }
 
   public function getJoins() {
@@ -204,21 +195,21 @@ class Query extends Table {
 
   public function getConditionSql($condition, $root = true) {
     if (is_array($condition)) {
-      if (isset($condition["field"]) && isset($condition["value"])) { //condition
-        $field = $condition["field"];
+      if (isset($condition["column"]) && isset($condition["value"])) { //condition
+        $column = $condition["column"];
         $operator = $condition["operator"];
         $value = $condition["value"];
         if ($operator == "~") {
-          return $field->getTable()->getAlias() . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+          return $column->getTable()->getAlias() . "." . $column->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
         }
         if ($operator == "!=") {
-          return $field->getTable()->getAlias() . "." . $field->getName() . " <> " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+          return $column->getTable()->getAlias() . "." . $column->getName() . " <> " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
         }
         if ($operator == "~") {
-          return $field->getTable()->getAlias() . "." . $field->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+          return $column->getTable()->getAlias() . "." . $column->getName() . " LIKE " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
         }
 
-        return $field->getTable()->getAlias() . "." . $field->getName() . " " . $operator . " " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
+        return $column->getTable()->getAlias() . "." . $column->getName() . " " . $operator . " " . (is_string($value)? "\\\"" . $value . "\\\"" : $value);
       } else { // parenthesis
         $where = !$root? "(" : "";
         foreach ($condition as $item) {
@@ -249,14 +240,14 @@ class Query extends Table {
 
     $root_alias = $this->getRoot()->getAlias();
 
-    $fields = $this->getFields();
-    $select_fields = array();
-    for ($i = 0; $i < count($fields); $i++) {
-      $field = $fields[$i];
-      $select_fields[] = $field->getSql();
+    $columns = $this->getColumns();
+    $select_columns = array();
+    for ($i = 0; $i < count($columns); $i++) {
+      $column = $columns[$i];
+      $select_columns[] = $column->getSql();
     }
 
-    $sql .= implode(", ", $select_fields);
+    $sql .= implode(", ", $select_columns);
     $sql .= " FROM " . $this->getTable() . " AS " . $root_alias;
 
     foreach ($this->getJoins() as $join) {
@@ -290,14 +281,14 @@ class Query extends Table {
     return $sql;
   }
 
-  function addSortBy($field, $direction) {
-    if (is_string($field)) {
+  function addSortBy($column, $direction) {
+    if (is_string($column)) {
       $column = new Column();
-      $parts = explode(".", $field);
+      $parts = explode(".", $column);
       $column->setName($parts[1]);
       $column->from($this->getOrCreateTable($parts[0]));
     } else {
-      $column = $field;
+      $column = $column;
     }
     $this->sort_by[] = array("column" => $column, "direction" => $direction);
   }

@@ -73,7 +73,18 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
       )
     ),
     "courses" => array(
-      "primary_key" => "id"
+      "primary_key" => "id",
+      "fields" => array("id", "name"),
+      "foreign_keys" => array(
+        "departments" => array(
+          "table" => "departments",
+          "cardinality" => "many",
+          "on" => array(
+            "courses.id" => "department_course.course_id",
+            "department_course.department_id" => "departments.id"
+          )
+        )
+      )
     ),
     "users" => array(
       "primary_key" => "id",
@@ -90,7 +101,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  public function testNoFields()
+  /*public function testNoFields()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -111,7 +122,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $nested = $populator->getResult($rows);
     //print_r($nested);exit;
@@ -149,7 +160,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $nested = $populator->getResult($rows);
     //print_r($nested);exit;
@@ -186,7 +197,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $nested = $populator->getResult($rows);
 
@@ -221,7 +232,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $nested = $populator->getResult($rows);
 
@@ -260,7 +271,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
 
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $nested = $populator->getResult($rows);
 
@@ -299,7 +310,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
     //print_r($segment->getMapping(true));exit;
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $nested = $populator->getResult($rows);
 
@@ -367,7 +378,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $this->assertEquals($sql_expected, $sql);
 
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $rows = array (
       array(1, 2),
@@ -413,7 +424,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
 
     $this->assertEquals($sql_expected, $sql);
 
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $rows = array (
       array(1, 2, "Department #1"),
@@ -432,7 +443,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($result, $nested);
   }
 
-  public function testManyRelationAsSeparatedSql()
+  public function testManyRelationAsSeparatedSqlWidhConditions()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -453,7 +464,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     }
 
     $sql_expected = array();
-    $sql_expected['departments'] = "SELECT departments_0.id, departments_0.name FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0 WHERE schools_0.id = 2) schools_1 ON (schools_1.id = school_department_0.school_id)";
+    $sql_expected['departments'] = "SELECT schools_1.id AS schools_1_id, departments_0.id, departments_0.name FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0 WHERE schools_0.id = 2) schools_1 ON (schools_1.id = school_department_0.school_id)";
 
     $sql_expected['schools'] = "SELECT schools_0.id FROM schools AS schools_0 WHERE schools_0.id = 2";
 
@@ -461,23 +472,157 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
       $this->assertEquals($sql_expected[$key], $item);
     }
 
-    $populator = new \fitch\sql\ArrayHydration($queries[0], $segment, $meta);
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
     $rows = array (
-      array(1, 2, "Department #1"),
-      array(2, 3, "Department #2")
+      array(1, 2, "Department #2")
     );
 
     $nested = $populator->getResult($rows);
 
     $result = array (
-      "schools.departments" => array (
-        0 => array("id" => 2, "name" => "Department #1"),
-        1 => array("id" => 3, "name" => "Department #2")
+      "schools" => array (
+        0 => array(
+          "departments" => array(
+            0 => array("id" => 2, "name" => "Department #2")
+          )
+        )
       )
     );
 
-    //$this->assertEquals($result, $nested);
+    $this->assertEquals($result, $nested);
+  }
+
+  public function testManyRelationAsSeparatedSqlWithFields()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $ql = "/schools{name, departments}";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($meta, $segment);
+    $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
+
+    $queries = $generator->getQueries();
+    $sql = array();
+    foreach ($queries as $key => $query) {
+      $sql[$key] = $queries[$key]->getSql($meta);
+    }
+
+    $sql_expected = array();
+    $sql_expected['departments'] = "SELECT schools_1.id AS schools_1_id, departments_0.id, departments_0.name FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0) schools_1 ON (schools_1.id = school_department_0.school_id)";
+
+    $sql_expected['schools'] = "SELECT schools_0.id, schools_0.name FROM schools AS schools_0";
+
+    foreach ($sql as $key => $item) {
+      $this->assertEquals($sql_expected[$key], $item);
+    }
+
+    $populator = new \fitch\sql\ManyArrayHydration($segment, $meta);
+
+    $results = array(
+      "schools" => array(
+        array(2, "School #2")
+      ),
+      "departments" => array (
+        array(2, 2, "Department #2")
+      )
+    );
+
+    $nested = $populator->getResult($results);
+
+    $result = array (
+      "schools" => array (
+        0 => array(
+          "name" => "School #2",
+          "departments" => array(
+            0 => array("id" => 2, "name" => "Department #2")
+          )
+        )
+      )
+    );
+
+    $this->assertEquals($result, $nested);
+  }*/
+  public function testManyRelationAsSeparatedSqlNested()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $ql = "/schools{name, departments{courses}}";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($meta, $segment);
+    $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
+
+    $queries = $generator->getQueries();
+    $sql = array();
+    foreach ($queries as $key => $query) {
+      $sql[$key] = $queries[$key]->getSql($meta);
+    }
+
+    $sql_expected = array();
+    $sql_expected["courses"] = 'SELECT departments_1.schools_1_id AS departments_1_schools_1_id, departments_1.id AS departments_1_id, courses_0.id, courses_0.name FROM courses AS courses_0 INNER JOIN department_course department_course_0 ON (department_course_0.course_id = courses_0.id) INNER JOIN (SELECT schools_1.id AS schools_1_id, departments_0.id FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0) schools_1 ON (schools_1.id = school_department_0.school_id)) departments_1 ON (departments_1.id = department_course_0.department_id)';
+
+    $sql_expected['departments'] = "SELECT schools_1.id AS schools_1_id, departments_0.id FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0) schools_1 ON (schools_1.id = school_department_0.school_id)";
+
+    $sql_expected['schools'] = "SELECT schools_0.id, schools_0.name FROM schools AS schools_0";
+
+    foreach ($sql as $key => $item) {
+      $this->assertEquals($sql_expected[$key], $item);
+    }
+
+    $populator = new \fitch\sql\ManyArrayHydration($segment, $meta);
+
+    $results = array(
+      "schools" => array(
+        array(1, "School #1"),
+        array(2, "School #2")
+      ),
+      "departments" => array (
+        array(1, 1),
+        array(2, 1),
+        array(1, 2)
+      ),
+      "courses" => array(
+        array(1, 1, 1, "Computer Science"),
+        array(2, 1, 1, "Computer Science")
+      )
+    );
+
+    $nested = $populator->getResult($results);
+    print_r($nested);
+    $result = array (
+      "schools" => array (
+        0 => array(
+          "name" => "School #1",
+          "departments" => array(
+            0 => array(
+              "courses" => array(
+                0 => array("id" => 1, "name" => "Computer Science")
+              )
+            )
+          )
+        ),
+        1 => array(
+            "name" => "School #2",
+            "departments" => array(
+              0 => array(
+                "courses" => array(
+                  0 => array("id" => 1, "name" => "Computer Science")
+                )
+              )
+            )
+          )
+      )
+    );
+    //print_r($nested);
+    $this->assertEquals($result, $nested);
   }
 
 }

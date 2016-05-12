@@ -7,12 +7,10 @@ use \fitch\fields\Relation as Relation;
 use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class ArrayHydration {
-  protected $query = null;
   protected $segment = null;
   protected $meta = null;
   protected $line = array();
-  public function __construct($query, $segment, $meta = null) {
-    $this->query = $query;
+  public function __construct($segment, $meta = null) {
     $this->segment = $segment;
     $this->meta = $meta;
   }
@@ -33,10 +31,10 @@ class ArrayHydration {
       $name = key($item);
       $id = $item[$name];
 
-      $last = $last[$name];
+      $last = $last[$name][$id];
       $last_id = $id;
     }
-    $line = is_array($last) && is_array($last[$last_id])? $last[$last_id]["_value"] : NULL;
+    $line = is_array($last)? $last["_value"] : NULL;
     return $line;
   }
 

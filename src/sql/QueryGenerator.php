@@ -107,7 +107,7 @@ class QueryGenerator extends Generator {
         $column = new Column();
         $column->setTable($table);
         $column->setName($field->getName());
-        $query->addField($column);
+        $query->addColumn($column);
       }
     }
 
@@ -125,8 +125,9 @@ class QueryGenerator extends Generator {
       $sql_field->setName($field->getName());
       $sql_field->setAlias($field->getAlias());
       $sql_field->setTable($this->alias_manager->getTableFromRelation($field->getParent()));
-      $function[$i]["field"] = $sql_field;
-      $query->addSortBy($function[$i]["field"], $function[$i]["direction"]);
+      $function[$i]["column"] = $sql_field;
+      unset($function[$i]["field"]);
+      $query->addSortBy($function[$i]["column"], $function[$i]["direction"]);
     }
     if ($function = $relation->getFunction("limit")) {
       $query->limit($function["limit"], $function["offset"]);
@@ -136,12 +137,13 @@ class QueryGenerator extends Generator {
   public function replaceFieldWithFieldsSql($condition) {
     if (is_array($condition)) {
       if (isset($condition["field"])) { //condition
-        $field = new \fitch\sql\Column();
-        $field->setName($condition["field"]->getName());
-        $field->setAlias($condition["field"]->getAlias());
-        $field->setTable($this->alias_manager->getTableFromRelation($condition["field"]->getParent()));
+        $column = new \fitch\sql\Column();
+        $column->setName($condition["field"]->getName());
+        $column->setAlias($condition["field"]->getAlias());
+        $column->setTable($this->alias_manager->getTableFromRelation($condition["field"]->getParent()));
 
-        $condition["field"] = $field;
+        $condition["column"] = $column;
+        unset($condition["field"]);
         return $condition;
       } else { // parenthesis
         $parenthesis = array();

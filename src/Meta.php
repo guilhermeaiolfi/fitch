@@ -7,7 +7,7 @@ class Meta {
     $this->meta = $meta;
   }
   public function getPrimaryKey($table) {
-    return array("id");
+    return is_array($this->meta[$table]["primary_key"])? $this->meta[$table]["primary_key"] : array($this->meta[$table]["primary_key"]);
   }
   public function getRelationConnections($table, $relation){
     return $this->meta[$table]["foreign_keys"][$relation]["on"];
