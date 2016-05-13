@@ -172,7 +172,8 @@ class Relation extends \fitch\fields\Field {
     $i = 0;
     foreach ($nodes as $node) {
       if ($node instanceof \fitch\fields\Relation) { continue; }
-      if ($node->getParent() == $this && $node instanceof \fitch\fields\PrimaryKeyHash) { return $i; }
+      // TODO: it was $node->getParent() == $this, see another way to compare those instances
+      if ($node->getParent()->getName() == $this->getName() && $node instanceof \fitch\fields\PrimaryKeyHash) { return $i; }
       $i++;
     }
     return -1;
