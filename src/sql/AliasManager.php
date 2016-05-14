@@ -7,6 +7,11 @@ class AliasManager
   protected $tables = array();
   protected $pivots = 0;
 
+  public function setTableForRelation($relation, $table) {
+    $id = spl_object_hash($relation);
+    $this->tables[$id] = $table;
+  }
+
   public function getTableFromRelation($relation) {
     $id = spl_object_hash($relation);
     if ($this->tables[$id]) {
