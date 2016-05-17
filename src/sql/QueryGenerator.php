@@ -13,7 +13,6 @@ use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class QueryGenerator extends Generator {
 
-  protected $cache = array();
   protected $alias_manager = NULL;
 
   public function addJoins($parent, $relation, $query, $direction = "down") {
@@ -77,11 +76,6 @@ class QueryGenerator extends Generator {
     }
   }
 
-  public function cache($key, $value = NULL) {
-    if (!$value) return $this->cache[$key];
-    $this->cache[$key] = $value;
-  }
-
   public function generateQueryForRelation($relation) {
     $this->alias_manager = new \fitch\sql\AliasManager();
     $joins = array();
@@ -115,40 +109,51 @@ class QueryGenerator extends Generator {
     return $query;
   }
 
+
+    // it can be:
+    // /relation?field=value OR
+    // /relation{other_rel}?other_rel.field=value 
+    // /relation{other_rel :as rel}?rel.field=value
+  public function createColumnFor($field, $relation) {
+    $parts = explode(".", $field);
+    $owner = NULL;
+
+    $column = new \fitch\sql\Column();
+    if (count($parts) > 1) {
+      $column->setName($parts[count($parts) - 1]);
+      $owner = $relation->getRelationByName($parts[0]);
+    } else {
+      $owner = $relation;
+      $column->setName($field);
+    }
+    $column->setTable($this->alias_manager->getTableFromRelation($owner));
+    return $column;
+  }
+
   public function buildRest($relation, $query) {
-    $conditions = $this->replaceFieldWithFieldsSql($relation->getConditions());
+    $conditions = $this->replaceFieldWithCOlumns($relation->getConditions(), $relation);
     $query->setConditions($conditions);
     $function = $relation->getFunction("sort");
     for($i = 0; $i < count($function); $i++) {
-      $field = $function[$i]["field"];
-      $sql_field = new \fitch\sql\Column();
-      $sql_field->setName($field->getName());
-      $sql_field->setAlias($field->getAlias());
-      $sql_field->setTable($this->alias_manager->getTableFromRelation($field->getParent()));
-      $function[$i]["column"] = $sql_field;
+      $function[$i]["column"] = $this->createColumnFor($function[$i]["field"], $relation);
       unset($function[$i]["field"]);
-      $query->addSortBy($function[$i]["column"], $function[$i]["direction"]);
+      $query->addSortBy($function[$i]["column"], $function[$i]["direction"] == "+"? "ASC" : "DESC");
     }
     if ($function = $relation->getFunction("limit")) {
       $query->limit($function["limit"], $function["offset"]);
     }
   }
 
-  public function replaceFieldWithFieldsSql($condition) {
+  public function replaceFieldWithColumns($condition, $root) {
     if (is_array($condition)) {
       if (isset($condition["field"])) { //condition
-        $column = new \fitch\sql\Column();
-        $column->setName($condition["field"]->getName());
-        $column->setAlias($condition["field"]->getAlias());
-        $column->setTable($this->alias_manager->getTableFromRelation($condition["field"]->getParent()));
-
-        $condition["column"] = $column;
+        $condition["column"] = $this->createColumnFor($condition["field"], $root);
         unset($condition["field"]);
         return $condition;
       } else { // parenthesis
         $parenthesis = array();
          foreach ($condition as $item) {
-          $parenthesis[] = $this->replaceFieldWithFieldsSql($item);
+          $parenthesis[] = $this->replaceFieldWithColumns($item, $root);
         }
         return $parenthesis;
       }

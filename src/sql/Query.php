@@ -272,7 +272,7 @@ class Query extends Table {
       $column = $sort_by[$i]["column"];
       $alias = $column->getTable()->getAlias();
       $sql .= $i? ", " : "";
-      $sql .= $alias . "."  . $column->getName() . " " . ($sort_by[$i]["direction"] == "+"? "ASC" : "DESC");
+      $sql .= $alias . "."  . $column->getName() . " " . $sort_by[$i]["direction"];
     }
 
     if (is_array($this->limit)) {

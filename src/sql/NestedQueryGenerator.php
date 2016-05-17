@@ -51,7 +51,6 @@ class NestedQueryGenerator extends QueryGenerator {
         $join_table->setAlias($this->alias_manager->getPivotAlias($join_table_name));
       }
 
-      // TODO: do for ONE-TO-MANY what was done to ONE-TO-ONE and keep the behavior for MANY-TO-MANY
       $join->from($join_table);
 
       $parent_table = $this->alias_manager->getTableFromRelation($parent);
@@ -127,25 +126,6 @@ class NestedQueryGenerator extends QueryGenerator {
       $join->from($join_table);
       $join->setCondition($condition);
       $query->join($join);
-    }
-  }
-
-  public function buildRest($relation, $query) {
-    $conditions = $this->replaceFieldWithFieldsSql($relation->getConditions());
-    $query->setConditions($conditions);
-    $function = $relation->getFunction("sort");
-    for($i = 0; $i < count($function); $i++) {
-      $field = $function[$i]["field"];
-      $sql_field = new \fitch\sql\Column();
-      $sql_field->setName($field->getName());
-      $sql_field->setAlias($field->getAlias());
-      $sql_field->setTable($this->alias_manager->getTableFromRelation($field->getParent()));
-      $function[$i]["column"] = $sql_field;
-      unset($function[$i]["field"]);
-      $query->addSortBy($function[$i]["column"], $function[$i]["direction"]);
-    }
-    if ($function = $relation->getFunction("limit")) {
-      $query->limit($function["limit"], $function["offset"]);
     }
   }
 

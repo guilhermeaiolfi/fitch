@@ -21,7 +21,7 @@ class Relation extends \fitch\fields\Field {
     return $this->conditions;
   }
 
-  public function fixCondition($condition) {
+  /*public function fixCondition($condition) {
     if (is_array($condition)) {
       if (isset($condition["field"])) { //condition
         $field = $this->getFieldByFullname($condition["field"]);
@@ -41,7 +41,7 @@ class Relation extends \fitch\fields\Field {
       return $condition;
     }
     return NULL;
-  }
+  }*/
 
   public function __construct($meta, $data, $parent = NULL) {
     parent::__construct($meta, $data, $parent);
@@ -70,11 +70,7 @@ class Relation extends \fitch\fields\Field {
       $this->createHashField();
     }
 
-    if ($data["conditions"]) {
-      $this->conditions = $data["conditions"];
-
-      $this->conditions = $this->fixCondition($data["conditions"]);
-    }
+    $this->conditions = $data["conditions"];
 
     for($i = 0; $i < count($data["functions"]); $i++) {
 
@@ -82,12 +78,8 @@ class Relation extends \fitch\fields\Field {
       if ($function["name"] == "sort") {
         $this->functions["sort"] = array();
         for($y = 0; $y < count($function["params"]); $y++) {
-          $field = $this->getFieldByFullname($function["params"][$y][0]);
-          if (!$field) {
-            throw new \Exception("No field(" . $function["params"][$y][0] . ") found" , 1);
-          }
           $this->functions["sort"][] = array (
-            "field" => $field,
+            "field" => $function["params"][$y][0],
             "direction" => $function["params"][$y][1]
           );
         }
