@@ -45,6 +45,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
       )
     ),
     "programs" => array(
+      "fields" => array("id"),
       "primary_key" => "id"
     ),
     "departments" => array(

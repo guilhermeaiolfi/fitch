@@ -6,6 +6,24 @@ class Meta {
   public function __construct($meta) {
     $this->meta = $meta;
   }
+  public function hasField($table, $field) {
+    $fields = $this->getFields($table);
+    if (!is_array($fields)) {
+      return false;
+    }
+    foreach ($fields as $item) {
+      if (is_array($item)) {
+        if ($item["name"] == $field) {
+          return true;
+        }
+      } else {
+        if ($item == $field) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
   public function getPrimaryKey($table) {
     return is_array($this->meta[$table]["primary_key"])? $this->meta[$table]["primary_key"] : array($this->meta[$table]["primary_key"]);
   }

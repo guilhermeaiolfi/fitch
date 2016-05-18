@@ -45,6 +45,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
       )
     ),
     "programs" => array(
+      "fields" => array("id"),
       "primary_key" => "id"
     ),
     "departments" => array(
@@ -205,6 +206,44 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
       "schools" => array (
         0 => array("id" => 1, "name" => "School #1", "director" => array ("name" => "Guilherme")),
         1 => array("id" => 2, "name" => "School #2", "director" => array ("name" => "Godofredo"))
+      )
+    );
+
+    $this->assertEquals($result, $nested);
+  }
+
+  public function testInvalidField()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $rows = array (
+      array(1, "School #1"),
+      array(2, "School #2"),
+    );
+
+    $ql = "/schools{id, name, NON_EXISTENT}";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($meta, $segment);
+    //print_r($segment->getMapping());exit;
+    $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
+
+    $nested = $populator->getResult($rows);
+
+    $sql_expected = "SELECT schools_0.id, schools_0.name FROM schools AS schools_0";
+
+    $this->assertEquals($sql_expected, $sql);
+    $result = array (
+      "schools" => array (
+        0 => array("id" => 1, "name" => "School #1"),
+        1 => array("id" => 2, "name" => "School #2")
       )
     );
 

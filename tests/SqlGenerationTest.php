@@ -19,6 +19,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
         ),
         "programs" => array(
           "table" => "programs",
+          "fields" => array("id"),
           "cardinality" => "many",
           "on" => array(
             "schools.id" => "school_program.school_id",

@@ -122,11 +122,14 @@ class Node {
 
     $n = count($parts);
 
+    $dotted = false;
+
     if (!$parent) { // it is the segment itself
       $parent = $this;
     }
 
     if ($n > 1) {
+      $dotted = true;
       $data["name"] = array_shift($parts);
       $data["generated"] = true;
       $data["fields"] = array(
@@ -143,7 +146,6 @@ class Node {
       $this->setGenerated(true);
       $this->setAlias(NULL);
       $this->setVisible(false);
-      $parent = $this;
     }
 
 
@@ -152,12 +154,23 @@ class Node {
         //$field["parent"] = $data;
         $obj = null;
 
-        $join = $meta->getRelationConnections($parent? $parent->getName() : NULL, $field["name"]);
+
+        $prev_rel = $parent;
+        if ($dotted) {
+          $prev_rel = $this;
+        }
+
+        $join = $meta->getRelationConnections($this->getTable(), $field["name"]);
         if (empty($field["fields"]) && strpos($field["name"], ".") === false && $join == NULL) {
-          $obj = new Field($meta, $field, $parent);
+
+          if (!$meta->hasField($this->getTable(), $field["name"])) {
+            continue;
+          }
+
+          $obj = new Field($meta, $field, $this);
         } else { // relation
           $parts = explode(".", $field["name"]);
-          $cardinality = $meta->getCardinality($parent->getName(), $parts[0]);
+          $cardinality = $meta->getCardinality($this->getTable(), $parts[0]);
           if ($cardinality == "many") {
             $obj = new ManyRelation($meta, $field, $this);
           } else {

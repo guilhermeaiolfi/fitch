@@ -21,39 +21,21 @@ class Relation extends \fitch\fields\Field {
     return $this->conditions;
   }
 
-  /*public function fixCondition($condition) {
-    if (is_array($condition)) {
-      if (isset($condition["field"])) { //condition
-        $field = $this->getFieldByFullname($condition["field"]);
-        if (!$field) {
-          throw new \Exception("No field(" . $condition["field"] . ") found" , 1);
-        }
-        $condition["field"] = $field;
-        return $condition;
-      } else { // parenthesis
-        $parenthesis = array();
-         foreach ($condition as $item) {
-          $parenthesis[] = $this->fixCondition($item);
-        }
-        return $parenthesis;
-      }
-    } else { // SQL's 'AND' or 'OR'
-      return $condition;
-    }
-    return NULL;
-  }*/
-
   public function __construct($meta, $data, $parent = NULL) {
-    parent::__construct($meta, $data, $parent);
+    // it needs to be done before going down because it's used to determine
+    // if it should or not create some fields
     if (!$parent) {
-      $this->setTable($this->getName());
+      $name = explode(".", $data["name"]);
+      $this->setTable($name[0]);
     } else {
-      $table = $this->getMeta()->getTableNameFromRelation($parent->getName(), $this->getName());
+      $name = explode(".", $data["name"]);
+      $table = $meta->getTableNameFromRelation($parent->getTable(), $name[0]);
       if (!$table) {
         throw new \Exception("Relation: \"" . $this->getName() . "\" doesn't exist in table \"" . $parent->getName() . "\"", 1);
       }
       $this->setTable($table);
     }
+    parent::__construct($meta, $data, $parent);
 
     if (count($this->children) == 0) {
       $fields = $meta->getFields($this->getTable());
