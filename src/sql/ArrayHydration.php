@@ -100,14 +100,19 @@ class ArrayHydration {
 
         $ids[] = array($name => $id);
 
-        $line = $this->getLineFor($ids);
-        if ($line === NULL) {
-          $arr[$name][] = array();
-          $line = count($arr[$name]) - 1;
-          $this->setLineFor($ids, $line);
-        }
+        if ($node->isMany()) {
 
-        $arr = &$arr[$name][$line];
+          $line = $this->getLineFor($ids);
+          if ($line === NULL) {
+            $arr[$name][] = array();
+            $line = count($arr[$name]) - 1;
+            $this->setLineFor($ids, $line);
+          }
+
+          $arr = &$arr[$name][$line];
+        } else {
+          $arr = &$arr[$name];
+        }
 
         $relations[] = array("_pointer" => &$arr, "_relation" => $node);
 

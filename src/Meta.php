@@ -24,7 +24,7 @@ class Meta {
   public function isMany($node) {
     if ($node instanceof \fitch\fields\Relation) {
       if ($node->getParent()) {
-        return $this->getCArdinality($node->getParent()->getName(), $node->getName()) == "many";
+        return $this->getCardinality($node->getParent()->getName(), $node->getName()) == "many";
       }
       return true;
     } else { //field

@@ -101,7 +101,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  /*public function testNoFields()
+  public function testNoFields()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -167,6 +167,44 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
       "schools" => array (
         0 => array("name" => "School #1", "id" => 1, "departments.id" => array (0 => 1, 1 => 2)),
         1 => array("name" => "School #2", "id" => 2, "departments.id" => array (0 => 1))
+      )
+    );
+
+    $this->assertEquals($result, $nested);
+  }
+
+  public function testOneToOne()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $rows = array (
+      array(1, "School #1", 1, "Guilherme"),
+      array(2, "School #2", 2, "Godofredo"),
+    );
+
+    $ql = "/schools{id, name, director{name}}";
+
+    $segment = $parser->parse($ql);
+    $segment = new \fitch\fields\Segment($meta, $segment);
+    //print_r($segment->getMapping());exit;
+    $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
+    $queries = $generator->getQueries();
+    $sql = $queries[0]->getSql($meta);
+
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
+
+    $nested = $populator->getResult($rows);
+
+    $sql_expected = "SELECT schools_0.id, schools_0.name, users_1.id AS users_1_id, users_1.name AS users_1_name FROM schools AS schools_0 INNER JOIN (SELECT users_0.id, users_0.name FROM users AS users_0) users_1 ON (users_1.id = schools_0.director_id)";
+
+    $this->assertEquals($sql_expected, $sql);
+    $result = array (
+      "schools" => array (
+        0 => array("id" => 1, "name" => "School #1", "director" => array ("name" => "Guilherme")),
+        1 => array("id" => 2, "name" => "School #2", "director" => array ("name" => "Godofredo"))
       )
     );
 
@@ -273,7 +311,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
 
     $nested = $populator->getResult($rows);
 
-    $sql_expected = 'SELECT schools_0.id, departments_1.id AS departments_1_id, departments_1.courses_1_id AS departments_1_courses_1_id FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN (SELECT departments_0.id, courses_1.id AS courses_1_id FROM departments AS departments_0 INNER JOIN department_course department_course_0 ON (department_course_0.departament_id = departments_0.id) INNER JOIN (SELECT courses_0.id FROM courses AS courses_0) courses_1 ON (courses_1.id = department_course_0.course_id)) departments_1 ON (departments_1.id = school_department_0.department_id)';
+    $sql_expected = 'SELECT schools_0.id, departments_1.id AS departments_1_id, departments_1.courses_1_id AS departments_1_courses_1_id FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN (SELECT departments_0.id, courses_1.id AS courses_1_id FROM departments AS departments_0 INNER JOIN department_course department_course_0 ON (department_course_0.department_id = departments_0.id) INNER JOIN (SELECT courses_0.id FROM courses AS courses_0) courses_1 ON (courses_1.id = department_course_0.course_id)) departments_1 ON (departments_1.id = school_department_0.department_id)';
 
     $this->assertEquals($sql_expected, $sql);
 
@@ -312,7 +350,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
 
     $nested = $populator->getResult($rows);
 
-    $sql_expected = 'SELECT schools_0.id, schools_0.name, departments_1.courses_1_id AS departments_1_courses_1_id FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN (SELECT courses_1.id AS courses_1_id FROM departments AS departments_0 INNER JOIN department_course department_course_0 ON (department_course_0.departament_id = departments_0.id) INNER JOIN (SELECT courses_0.id FROM courses AS courses_0) courses_1 ON (courses_1.id = department_course_0.course_id)) departments_1 ON (departments_1.id = school_department_0.department_id)';
+    $sql_expected = 'SELECT schools_0.id, schools_0.name, departments_1.courses_1_id AS departments_1_courses_1_id FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN (SELECT courses_1.id AS courses_1_id FROM departments AS departments_0 INNER JOIN department_course department_course_0 ON (department_course_0.department_id = departments_0.id) INNER JOIN (SELECT courses_0.id FROM courses AS courses_0) courses_1 ON (courses_1.id = department_course_0.course_id)) departments_1 ON (departments_1.id = school_department_0.department_id)';
 
     $this->assertEquals($sql_expected, $sql);
 
@@ -411,7 +449,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($result, $nested);
   }
 
- 
+
   public function testNestedManyRelation()
   {
     $meta = $this->meta;
@@ -426,7 +464,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
 
     $queries = $generator->getQueries();
-    $sql_expected = 'SELECT schools_0.id, schools_0.name, departments_1.id AS departments_1_id, departments_1.courses_1_id AS departments_1_courses_1_id, departments_1.courses_1_name AS departments_1_courses_1_name FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN (SELECT departments_0.id, courses_1.id AS courses_1_id, courses_1.name AS courses_1_name FROM departments AS departments_0 INNER JOIN department_course department_course_0 ON (department_course_0.departament_id = departments_0.id) INNER JOIN (SELECT courses_0.id, courses_0.name FROM courses AS courses_0) courses_1 ON (courses_1.id = department_course_0.course_id)) departments_1 ON (departments_1.id = school_department_0.department_id)';
+    $sql_expected = 'SELECT schools_0.id, schools_0.name, departments_1.id AS departments_1_id, departments_1.courses_1_id AS departments_1_courses_1_id, departments_1.courses_1_name AS departments_1_courses_1_name FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN (SELECT departments_0.id, courses_1.id AS courses_1_id, courses_1.name AS courses_1_name FROM departments AS departments_0 INNER JOIN department_course department_course_0 ON (department_course_0.department_id = departments_0.id) INNER JOIN (SELECT courses_0.id, courses_0.name FROM courses AS courses_0) courses_1 ON (courses_1.id = department_course_0.course_id)) departments_1 ON (departments_1.id = school_department_0.department_id)';
 
     $sql = $queries[0]->getSql();
     $this->assertEquals($sql_expected, $sql);
@@ -466,7 +504,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     );
     //print_r($nested);
     $this->assertEquals($result, $nested);
-  }*/
+  }
 
   public function testNestedManyRelationWithInnerCondition()
   {
