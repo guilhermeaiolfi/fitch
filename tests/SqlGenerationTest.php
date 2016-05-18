@@ -303,7 +303,9 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
             );
 
     foreach ($tests as $key => $test) {
-      $segment = new \fitch\fields\Segment($meta, $test["token"]);
+      $segment = new \fitch\fields\Segment();
+      $builder = new \fitch\SegmentBuilder($meta);
+      $segment = $builder->buildSegment($test["token"]);
       $generator = new \fitch\sql\QueryGenerator($segment, $meta);
       $queries = $generator->getQueries();
       $sql = $queries[0]->getSql($meta);

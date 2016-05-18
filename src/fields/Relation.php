@@ -21,58 +21,25 @@ class Relation extends \fitch\fields\Field {
     return $this->conditions;
   }
 
-  public function __construct($meta, $data, $parent = NULL) {
-    // it needs to be done before going down because it's used to determine
-    // if it should or not create some fields
-    if (!$parent) {
-      $name = explode(".", $data["name"]);
-      $this->setTable($name[0]);
-    } else {
-      $name = explode(".", $data["name"]);
-      $table = $meta->getTableNameFromRelation($parent->getTable(), $name[0]);
-      if (!$table) {
-        throw new \Exception("Relation: \"" . $this->getName() . "\" doesn't exist in table \"" . $parent->getName() . "\"", 1);
-      }
-      $this->setTable($table);
+  public function setConditions($conditions) {
+    $this->conditions = $conditions;
+  }
+
+  public function addSort($field, $direction) {
+    if (!$this->functions["sort"]) {
+      $this->functions["sort"] = array();
     }
-    parent::__construct($meta, $data, $parent);
+    $this->functions["sort"][] = array(
+      "field" => $field,
+      "direction" => $direction
+    );
+  }
 
-    if (count($this->children) == 0) {
-      $fields = $meta->getFields($this->getTable());
-      if (is_array($fields)) {
-        foreach($fields as $field) {
-          $field = new Field($meta, is_array($field)? $field : array("name" => $field), $this);
-          $field->setParent($this);
-          $this->addChild($field);
-        }
-      }
-    }
-
-    if ($this->hasVisibleFields() || !$parent) {
-      $this->createHashField();
-    }
-
-    $this->conditions = $data["conditions"];
-
-    for($i = 0; $i < count($data["functions"]); $i++) {
-
-      $function = $data["functions"][$i];
-      if ($function["name"] == "sort") {
-        $this->functions["sort"] = array();
-        for($y = 0; $y < count($function["params"]); $y++) {
-          $this->functions["sort"][] = array (
-            "field" => $function["params"][$y][0],
-            "direction" => $function["params"][$y][1]
-          );
-        }
-      }
-      if ($function["name"] == "limit") {
-        $this->functions["limit"] = array (
-            "limit" => $function["params"][0],
-            "offset" => $function["params"][1]
-        );
-      }
-    }
+  public function limit ($limit, $offset) {
+    $this->functions["limit"] = array(
+      "limit" => $limit,
+      "offset" => $offset
+    );
   }
 
   public function getLeaves() {
@@ -95,7 +62,7 @@ class Relation extends \fitch\fields\Field {
     return $relations;
   }
 
-  protected function hasVisibleFields() {
+  public function hasVisibleFields() {
     foreach ($this->getChildren() as $child) {
       if ($child->isVisible()) {
         return true;
@@ -110,31 +77,6 @@ class Relation extends \fitch\fields\Field {
 
   public function getTable() {
     return $this->table;
-  }
-
-  protected function createHashField() {
-    $primary_key = $this->getMeta()->getPrimaryKeyName($this);
-    $primary_key_field = new PrimaryKeyHash($this->getMeta(), array('name' => $primary_key));
-    $primary_key_field->setPrimaryKey(array($primary_key));
-    $primary_key_field->setName($primary_key);
-    //$keys = $this->getMeta()->getPrimaryKey($this->getMeta()->getTableNameFromRelation($this->getRelationName()));
-    $primary_key_field->setParent($this);
-    $children = $this->getChildren();
-    $replaced = false;
-    for ($i = 0; $i < count($children); $i++) {
-      if ($children[$i]->getName() == $primary_key) { //TODO: removed hardcode primary_key
-
-        $primary_key_field->setField($children[$i]);
-        $this->children[$i] = $primary_key_field;
-        $replaced = true;
-        break;
-      }
-    }
-    if (!$replaced) {
-      $primary_key_field->setVisible(false);
-      array_unshift($this->children, $primary_key_field);
-    }
-    return $primary_key_field;
   }
 
   public function getPkIndex() {

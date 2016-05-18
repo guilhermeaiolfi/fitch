@@ -117,7 +117,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -154,7 +155,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, id, departments.id}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     //print_r($segment->getMapping());exit;
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -189,7 +191,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{id, name, director{name}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     //print_r($segment->getMapping());exit;
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -227,7 +230,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{id, name, NON_EXISTENT}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     //print_r($segment->getMapping());exit;
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -266,7 +270,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, id, departments{id}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -301,7 +306,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{id,departments :as dep{id}}?dep.id=1";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -340,7 +346,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{id,departments{id, courses{id}}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -379,7 +386,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name,departments.courses.id}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -412,7 +420,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{programs.id}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
 
@@ -451,7 +460,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools.departments";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
 
     $relation = NULL;
@@ -499,7 +509,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, departments{courses}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
 
     $queries = $generator->getQueries();
@@ -556,7 +567,8 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
 
     $segment = $parser->parse($ql);
     $segment["fields"][1]["conditions"] = array("field" => "id", "operator" => "=", "value" => 2);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
 
     $queries = $generator->getQueries();

@@ -101,7 +101,6 @@ class ArrayHydration {
         $ids[] = array($name => $id);
 
         if ($node->isMany()) {
-
           $line = $this->getLineFor($ids);
           if ($line === NULL) {
             $arr[$name][] = array();

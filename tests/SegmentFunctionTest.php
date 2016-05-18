@@ -68,7 +68,8 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
 
     $meta = new Meta($this->meta);
 
-    $segment = new \fitch\fields\Segment($meta, $expected);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($result);
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
@@ -102,7 +103,9 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
 
     $meta = new Meta($this->meta);
 
-    $segment = new \fitch\fields\Segment($meta, $expected);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($result);
+
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);

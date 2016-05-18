@@ -112,7 +112,7 @@ class QueryGenerator extends Generator {
 
     // it can be:
     // /relation?field=value OR
-    // /relation{other_rel}?other_rel.field=value 
+    // /relation{other_rel}?other_rel.field=value
     // /relation{other_rel :as rel}?rel.field=value
   public function createColumnFor($field, $relation) {
     $parts = explode(".", $field);
@@ -169,8 +169,6 @@ class QueryGenerator extends Generator {
     $queries[] = $this->generateQueryForRelation($root);
     return $queries;
   }
-
-
 }
 
 ?>

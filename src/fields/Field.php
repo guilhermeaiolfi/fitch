@@ -6,9 +6,13 @@ use \fitch\Node as Node;
 use \fitch\fields\SoftRelation as SoftRelation;
 
 class Field extends Node {
-
+  protected $many = false;
   public function isMany() {
-    return $this->getMeta()->isMany($this);
+    return $this->many;
+  }
+
+  public function setMany($many) {
+    $this->many = $many;
   }
 
   public function getFullname() {

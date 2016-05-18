@@ -102,7 +102,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  public function testNoFields()
+  /*public function testNoFields()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -117,7 +117,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -155,8 +156,9 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, id, departments.id}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
-    //print_r($segment->getMapping());exit;
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
+    //print_r($segment->getChildren());exit;
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
     $sql = $queries[0]->getSql($meta);
@@ -174,7 +176,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     );
 
     $this->assertEquals($result, $nested);
-  }
+  }*/
 
   public function testNestedRelation()
   {
@@ -192,7 +194,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, id, departments{id}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     //print_r($segment);exit;
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -227,7 +230,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{id,departments :as dep{id}}?dep.id=1";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     //print_r($segment->getMapping());exit;
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -266,7 +270,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{id,departments{id, courses{id}}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     //print_r($segment);exit;
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -305,7 +310,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name,departments.courses.id}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
     $queries = $generator->getQueries();
@@ -338,7 +344,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name,departments.courses.id}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
 
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
 
@@ -368,7 +375,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{programs.id}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     //print_r($segment->getMapping(true));exit;
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
 
@@ -407,7 +415,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools.departments";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     $generator = new \fitch\sql\QueryGenerator($segment, $meta);
 
     $relation = NULL;
@@ -454,7 +463,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{departments}?id=2";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
 
     $queries = $generator->getQueries();
@@ -504,7 +514,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, departments}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
 
     $queries = $generator->getQueries();
@@ -558,7 +569,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, departments{courses}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
 
     $queries = $generator->getQueries();
@@ -639,7 +651,8 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $ql = "/schools{name, departments{courses}}";
 
     $segment = $parser->parse($ql);
-    $segment = new \fitch\fields\Segment($meta, $segment);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
     $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
 
     $queries = $generator->getQueries();

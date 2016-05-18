@@ -41,14 +41,15 @@ class Meta {
   }
   public function isMany($node) {
     if ($node instanceof \fitch\fields\Relation) {
+        //print_r($node->getMapping(true));exit;
       if ($node->getParent()) {
-        return $this->getCardinality($node->getParent()->getName(), $node->getName()) == "many";
+        return $this->getCardinality($node->getParent()->getTable(), $node->getName()) == "many";
       }
       return true;
     } else { //field
       $relation = $node->getParent();
       if ($relation->getParent() && $relation->isGenerated()) {
-        return $this->getCardinality($relation->getParent()->getName(), $relation->getName()) == "many";
+        return ($this->getCardinality($relation->getParent()->getTable(), $relation->getName()) == "many");
       }
     }
     return false;
