@@ -315,6 +315,7 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       $populator = new \fitch\sql\ArrayHydration($segment, $meta);
 
       $nested = $populator->getResult($rows);
+      //print_r($nested);exit;
       if ($test["result"]) {
         $this->assertEquals($test["result"], $nested, "JSON result are OK in $key");
       }

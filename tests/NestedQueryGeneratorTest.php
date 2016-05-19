@@ -543,7 +543,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
           )
       )
     );
-    print_r($nested);
+    //print_r($nested);
     $this->assertEquals($result, $nested);
   }
 
@@ -618,7 +618,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
         )
       )
     );
-    print_r($nested);
+    //print_r($nested);
     $this->assertEquals($result, $nested);
   }
 }

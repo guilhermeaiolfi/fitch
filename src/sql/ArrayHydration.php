@@ -57,111 +57,64 @@ class ArrayHydration {
     $last["_value"] = $line;
   }
 
-  public function setFieldValue (&$arr, $field, $value) {
+  public function setFieldValue(&$pointer, $field, $value) {
     $name = $field->getAliasOrName();
-
-    //$arr = &$level["_pointer"];
-    if ($field->isMany()) {
+    if ($field->getParent()->isMany() && $field->getParent()->isGenerated()) {
+      if (!is_array($pointer[$name])) {
+        $pointer[$name] = array();
+      }
+      $pointer[$name][] = $value;
+    } else {
+      $pointer[$name] = $value;
+    }
+  }
+  public function populateRelation(&$arr, $node, $row, $ids, $column_index) {
+    $name = $node->getAliasOrName();
+    $pointer = &$arr;
+    if (!$node->isGenerated()) {
       if (!is_array($arr[$name])) {
         $arr[$name] = array();
       }
-      $arr[$name][] = $value;
-    } else {
-      $arr[$name] = $value;
-    }
-  }
 
-  public function &getPointerFor($node, &$relations) {
-    // if ($parent = $relation->getParent())
-    //   return $relations[$parent->getName()];
-    // return NULL;
-    if (!$node) {
-      return NULL;
-    }
-    while ($node) {
-      if (!$node->isGenerated()) {
-        break;
-      }
-      $node = $node->getParent();
-    }
-    //echo "\n-------------------------------\n";
-    for($i = count($relations) - 1; $i >= 0; $i--) {
-      //echo $i . " " . $relations[$i]["_relation"]->getName() . " " . $parent->getName() . " " . $relation->getName() . "\n";
-      if ($relations[$i]["_relation"]->getName() == $node->getName()) {
-        return $relations[$i]["_pointer"];
+      $id = $row[$column_index];
+
+      $ids[] = array($name => $id);
+
+      if ($node->isMany()) {
+        $line = $this->getLineFor($ids);
+        if ($line === NULL) {
+          $arr[$name][] = array();
+          $line = count($arr[$name]) - 1;
+          $this->setLineFor($ids, $line);
+        }
+
+        $pointer = &$arr[$name][$line];
+      } else {
+        $pointer = &$arr[$name];
       }
     }
-    return NULL;
+
+    if ($children = $node->getChildren()) {
+      foreach ($children as $child) {
+        if ($child instanceof Field) {
+          if ($child->isVisible()) {
+            $this->setFieldValue($pointer, $child, $row[$column_index]);
+          }
+          $column_index++;
+        }
+      }
+      foreach ($children as $child) {
+        if ($child instanceof Relation) {
+          $column_index = $this->populateRelation($pointer, $child, $row, $ids, $column_index);
+        }
+      }
+    }
+    return $column_index;
   }
+    
   public function populateRow(&$result, $row) {
-    $arr = &$result;
-    $oba = array();
-    $relations = array();
     $ids = array();
-    $column_index = 0;
-    $pending = array($this->segment);
-    $level = 0;
-    while ($node = array_shift($pending)) {
-      $name = $node->getAliasOrName();
-
-      if ($node instanceof Relation) {
-
-        if ($children = $node->getChildren()) {
-          foreach ($children as $child) {
-            $pending[] = $child;
-          }
-          if ($node->isGenerated()) {
-            continue;
-          }
-        }
-        $diff = $node->getLevel() - $level - 1;
-        $level = $node->getLevel();
-
-        if ($diff < 0 && $level != 0) {
-          while($diff++ < 0) {
-            array_pop($ids);
-          }
-        }
-
-        $pointer =& $this->getPointerFor($node->getParent(), $relations);
-
-
-        if ($pointer !== NULL) {
-          $arr = &$pointer;
-        } else {
-          $arr = &$result;
-        }
-
-        if (!is_array($arr[$name])) {
-          $arr[$name] = array();
-        }
-
-        $id = $row[$node->getPkIndex()];
-
-        $ids[] = array($name => $id);
-
-        if ($node->isMany()) {
-          $line = $this->getLineFor($ids);
-          if ($line === NULL) {
-            $arr[$name][] = array();
-            $line = count($arr[$name]) - 1;
-            $this->setLineFor($ids, $line);
-          }
-
-          $arr = &$arr[$name][$line];
-        } else {
-          $arr = &$arr[$name];
-        }
-
-        $relations[] = array("_pointer" => &$arr, "_relation" => $node);
-
-      } elseif ($node instanceof Field) {
-        if ($node->isVisible()) {
-          $this->setFieldValue($this->getPointerFor($node->getParent(), $relations), $node, $row[$column_index]);
-        }
-        $column_index++;
-      }
-    }
+    $this->populateRelation($result, $this->segment, $row, $ids, 0);
   }
 }
 

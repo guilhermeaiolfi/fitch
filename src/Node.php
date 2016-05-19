@@ -49,6 +49,25 @@ class Node {
     return null;
   }
 
+  public function getListOf($type) {
+    $pending = array();
+    $current = $this;
+    $list = array();
+    while($current && $children = $current->getChildren()) {
+      foreach ($children as $item) {
+        if (is_a($item, $type)) {
+          $list[] = $item;
+        }
+        if ($item->getChildren()) {
+          $pending[] = $item;
+        }
+      }
+      $current = array_shift($pending);
+    }
+
+    return $list;
+  }
+
   public function addChild($child) {
     if (!$exists = $this->getChildByName($child->getName(), $child->getParent())) {
       $this->children[] = $child;

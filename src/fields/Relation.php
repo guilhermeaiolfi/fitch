@@ -4,10 +4,21 @@ namespace fitch\fields;
 
 use \fitch\Join as Join;
 
-class Relation extends \fitch\fields\Field {
+class Relation extends \fitch\fields\Selectable {
   protected $table = NULL;
   protected $functions = array();
   protected $conditions = NULL;
+
+  protected $many = true;
+  
+  public function isMany() {
+    return $this->many;
+  }
+
+  public function setMany($many) {
+    $this->many = $many;
+  }
+
 
   public function getFunctions() {
     return $this->functions;

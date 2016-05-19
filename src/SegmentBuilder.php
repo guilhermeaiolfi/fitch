@@ -92,7 +92,6 @@ class SegmentBuilder
 
       $this->manageFunctions($current, $data["functions"]);
     }
-    $current->setMany($this->meta->isMany($current));
     return $current;
   }
 
@@ -154,7 +153,6 @@ class SegmentBuilder
     for ($i = 0; $i < count($children); $i++) {
       if ($children[$i]->getName() == $primary_key) { //TODO: removed hardcode primary_key
         $primary_key_field->setField($children[$i]);
-        $primary_key_field->setMany($children[$i]->isMany());
         $children[$i] = $primary_key_field;
         $replaced = true;
         break;
