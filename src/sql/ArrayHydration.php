@@ -57,11 +57,10 @@ class ArrayHydration {
     $last["_value"] = $line;
   }
 
-  public function setFieldValue (&$level, $field, $value) {
-    $relation = $level["_relation"];
+  public function setFieldValue (&$arr, $field, $value) {
     $name = $field->getAliasOrName();
 
-    $arr = &$level["_pointer"];
+    //$arr = &$level["_pointer"];
     if ($field->isMany()) {
       if (!is_array($arr[$name])) {
         $arr[$name] = array();
@@ -101,7 +100,7 @@ class ArrayHydration {
     $ids = array();
     $column_index = 0;
     $pending = array($this->segment);
-
+    $level = 0;
     while ($node = array_shift($pending)) {
       $name = $node->getAliasOrName();
 
@@ -115,13 +114,20 @@ class ArrayHydration {
             continue;
           }
         }
+        $diff = $node->getLevel() - $level - 1;
+        $level = $node->getLevel();
+
+        if ($diff < 0 && $level != 0) {
+          while($diff++ < 0) {
+            array_pop($ids);
+          }
+        }
 
         $pointer =& $this->getPointerFor($node->getParent(), $relations);
 
 
-        if ($pointer != NULL) {
-          $arr = $pointer;
-          //continue;
+        if ($pointer !== NULL) {
+          $arr = &$pointer;
         } else {
           $arr = &$result;
         }
@@ -130,8 +136,7 @@ class ArrayHydration {
           $arr[$name] = array();
         }
 
-
-        $id = $row[$column_index];
+        $id = $row[$node->getPkIndex()];
 
         $ids[] = array($name => $id);
 
@@ -152,7 +157,7 @@ class ArrayHydration {
 
       } elseif ($node instanceof Field) {
         if ($node->isVisible()) {
-          $this->setFieldValue($relations[$node->getLevel()], $node, $row[$column_index]);
+          $this->setFieldValue($this->getPointerFor($node->getParent(), $relations), $node, $row[$column_index]);
         }
         $column_index++;
       }

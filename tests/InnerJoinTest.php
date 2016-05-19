@@ -102,7 +102,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  /*public function testNoFields()
+  public function testNoFields()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -176,7 +176,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     );
 
     $this->assertEquals($result, $nested);
-  }*/
+  }
 
   public function testNestedRelation()
   {
@@ -453,194 +453,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($result, $nested);
   }
 
-  public function testManyRelationAsSeparatedSqlWidhConditions()
-  {
-    $meta = $this->meta;
-    $meta = new Meta($meta);
-
-    $parser = new Parser();
-
-    $ql = "/schools{departments}?id=2";
-
-    $segment = $parser->parse($ql);
-    $builder = new \fitch\SegmentBuilder($meta);
-    $segment = $builder->buildSegment($segment);
-    $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
-
-    $queries = $generator->getQueries();
-    $sql = array();
-    foreach ($queries as $key => $query) {
-      $sql[$key] = $queries[$key]->getSql($meta);
-      //echo $key . "=>" . $sql[$key];
-    }
-
-    $sql_expected = array();
-    $sql_expected['departments'] = "SELECT schools_1.id AS schools_1_id, departments_0.id, departments_0.name FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0 WHERE schools_0.id = 2) schools_1 ON (schools_1.id = school_department_0.school_id)";
-
-    $sql_expected['schools'] = "SELECT schools_0.id FROM schools AS schools_0 WHERE schools_0.id = 2";
-
-    foreach ($sql as $key => $item) {
-      $this->assertEquals($sql_expected[$key], $item);
-    }
-
-    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
-
-    $rows = array (
-      array(1, 2, "Department #2")
-    );
-
-    $nested = $populator->getResult($rows);
-
-    $result = array (
-      "schools" => array (
-        0 => array(
-          "departments" => array(
-            0 => array("id" => 2, "name" => "Department #2")
-          )
-        )
-      )
-    );
-
-    $this->assertEquals($result, $nested);
-  }
-
-  public function testManyRelationAsSeparatedSqlWithFields()
-  {
-    $meta = $this->meta;
-    $meta = new Meta($meta);
-
-    $parser = new Parser();
-
-    $ql = "/schools{name, departments}";
-
-    $segment = $parser->parse($ql);
-    $builder = new \fitch\SegmentBuilder($meta);
-    $segment = $builder->buildSegment($segment);
-    $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
-
-    $queries = $generator->getQueries();
-    $sql = array();
-    foreach ($queries as $key => $query) {
-      $sql[$key] = $queries[$key]->getSql($meta);
-    }
-
-    $sql_expected = array();
-    $sql_expected['departments'] = "SELECT schools_1.id AS schools_1_id, departments_0.id, departments_0.name FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0) schools_1 ON (schools_1.id = school_department_0.school_id)";
-
-    $sql_expected['schools'] = "SELECT schools_0.id, schools_0.name FROM schools AS schools_0";
-
-    foreach ($sql as $key => $item) {
-      $this->assertEquals($sql_expected[$key], $item);
-    }
-
-    $populator = new \fitch\sql\ManyArrayHydration($segment, $meta);
-
-    $results = array(
-      "schools" => array(
-        array(2, "School #2")
-      ),
-      "departments" => array (
-        array(2, 2, "Department #2")
-      )
-    );
-
-    $nested = $populator->getResult($results);
-
-    $result = array (
-      "schools" => array (
-        0 => array(
-          "name" => "School #2",
-          "departments" => array(
-            0 => array("id" => 2, "name" => "Department #2")
-          )
-        )
-      )
-    );
-
-    $this->assertEquals($result, $nested);
-  }
-  public function testManyRelationAsSeparatedSqlNested()
-  {
-    $meta = $this->meta;
-    $meta = new Meta($meta);
-
-    $parser = new Parser();
-
-    $ql = "/schools{name, departments{courses}}";
-
-    $segment = $parser->parse($ql);
-    $builder = new \fitch\SegmentBuilder($meta);
-    $segment = $builder->buildSegment($segment);
-    $generator = new \fitch\sql\ManyQueryGenerator($segment, $meta);
-
-    $queries = $generator->getQueries();
-    $sql = array();
-    foreach ($queries as $key => $query) {
-      $sql[$key] = $queries[$key]->getSql($meta);
-    }
-
-    $sql_expected = array();
-    $sql_expected["courses"] = 'SELECT departments_1.schools_1_id AS departments_1_schools_1_id, departments_1.id AS departments_1_id, courses_0.id, courses_0.name FROM courses AS courses_0 INNER JOIN department_course department_course_0 ON (department_course_0.course_id = courses_0.id) INNER JOIN (SELECT schools_1.id AS schools_1_id, departments_0.id FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0) schools_1 ON (schools_1.id = school_department_0.school_id)) departments_1 ON (departments_1.id = department_course_0.department_id)';
-
-    $sql_expected['departments'] = "SELECT schools_1.id AS schools_1_id, departments_0.id FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id FROM schools AS schools_0) schools_1 ON (schools_1.id = school_department_0.school_id)";
-
-    $sql_expected['schools'] = "SELECT schools_0.id, schools_0.name FROM schools AS schools_0";
-
-    foreach ($sql as $key => $item) {
-      $this->assertEquals($sql_expected[$key], $item);
-    }
-
-    $populator = new \fitch\sql\ManyArrayHydration($segment, $meta);
-
-    $results = array(
-      "schools" => array(
-        array(1, "School #1"),
-        array(2, "School #2")
-      ),
-      "departments" => array (
-        array(1, 1),
-        array(2, 1),
-        array(1, 2)
-      ),
-      "courses" => array(
-        array(1, 1, 1, "Computer Science"),
-        array(2, 1, 1, "Computer Science")
-      )
-    );
-
-    $nested = $populator->getResult($results);
-    //print_r($nested);
-    $result = array (
-      "schools" => array (
-        0 => array(
-          "name" => "School #1",
-          "departments" => array(
-            0 => array(
-              "courses" => array(
-                0 => array("id" => 1, "name" => "Computer Science")
-              )
-            ),
-            1 => array(
-              "courses" => array()
-            )
-          )
-        ),
-        1 => array(
-            "name" => "School #2",
-            "departments" => array(
-              0 => array(
-                "courses" => array(
-                  0 => array("id" => 1, "name" => "Computer Science")
-                )
-              )
-            )
-          )
-      )
-    );
-    //print_r($nested);
-    $this->assertEquals($result, $nested);
-  }
-
+  
   public function testNestedManyRelation()
   {
     $meta = $this->meta;

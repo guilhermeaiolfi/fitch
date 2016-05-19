@@ -159,6 +159,19 @@ class Relation extends \fitch\fields\Field {
     return NULL;
   }
 
+  public function getLevel() {
+    $level = 0;
+    $parent = $this->getParent();
+    while ($parent) {
+      if ($parent instanceof \fitch\fields\Relation && $parent->isGenerated()) {
+      } else if ($parent instanceof \fitch\fields\Relation) {
+        $level++;
+      }
+      $parent = $parent->getParent();
+    }
+    return $level;
+  }
+
   public function getFieldByName($field_name, $relation_name) {
     $field = $this->getListOf("\\fitch\\fields\\Field");
     foreach ($fields as $field) {

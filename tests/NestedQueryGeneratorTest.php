@@ -94,7 +94,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  /*public function testNoFields()
+  public function testNoFields()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -490,7 +490,6 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($result, $nested);
   }
 
-
   public function testNestedManyRelation()
   {
     $meta = $this->meta;
@@ -544,7 +543,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
           )
       )
     );
-    //print_r($nested);
+    print_r($nested);
     $this->assertEquals($result, $nested);
   }
 
@@ -568,7 +567,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
 
     $sql = $queries[0]->getSql();
     $this->assertEquals($sql_expected, $sql);
-  }*/
+  }
 
   public function testNestedSideBySide()
   {
@@ -598,7 +597,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     );
 
     $nested = $populator->getResult($results);
-    print_r($nested);exit;
+    //print_r($nested);exit;
     $result = array (
       "departments" => array (
         0 => array(
@@ -619,7 +618,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
         )
       )
     );
-    //print_r($nested);
+    print_r($nested);
     $this->assertEquals($result, $nested);
   }
 }
