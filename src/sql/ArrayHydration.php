@@ -3,7 +3,7 @@
 namespace fitch\sql;
 
 use \fitch\fields\Relation as Relation;
-//use \fitch\fields\Field as Field;
+use \fitch\fields\Field as Field;
 use \fitch\fields\PrimaryKeyHash as PrimaryKeyHash;
 
 class ArrayHydration {
@@ -83,7 +83,7 @@ class ArrayHydration {
     while ($node = array_shift($pending)) {
       $name = $node->getAliasOrName();
 
-      if ($node instanceof \fitch\fields\Relation) {
+      if ($node instanceof Relation) {
         if ($children = $node->getChildren()) {
           foreach ($children as $child) {
             $pending[] = $child;
@@ -96,7 +96,7 @@ class ArrayHydration {
           $arr[$name] = array();
         }
 
-        $id = $row[$node->getPkIndex()];
+        $id = $row[$column_index];
 
         $ids[] = array($name => $id);
 
@@ -115,7 +115,7 @@ class ArrayHydration {
 
         $relations[] = array("_pointer" => &$arr, "_relation" => $node);
 
-      } elseif ($node instanceof \fitch\fields\Field) {
+      } elseif ($node instanceof Field) {
         if ($node->isVisible()) {
           $this->setFieldValue($relations[$node->getLevel()], $node, $row[$column_index]);
         }

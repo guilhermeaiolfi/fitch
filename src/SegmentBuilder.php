@@ -17,23 +17,20 @@ class SegmentBuilder
   }
 
   public function buildSegment($data) {
+    $data = $this->splitArray($data);
     $segment = $this->buildNode('\\fitch\\fields\\Segment', $data);
-    //print_r($segment->getMapping());
     return $segment;
   }
 
-  protected function sliceDottedRelation($data) {
-    $parts = explode(".", $data["name"]);
-
-    $n = count($parts);
-
-    if ($n > 1) {
-      $data["name"] = array_shift($parts);
+  protected function splitArray($data) {
+    if (strpos($data["name"], ".") !== FALSE) {
+      $name = explode(".", $data["name"]);
+      $data["name"] = array_shift($name);
       $data["generated"] = true;
       $data["visible"] = false;
       $data["fields"] = array(
           array(
-            "name" => implode(".", $parts),
+            "name" => implode(".", $name),
             "generated" => false,
             "alias" => $data["alias"],
             "fields" => $data["fields"]
@@ -41,16 +38,29 @@ class SegmentBuilder
       );
       $data["alias"] = NULL;
     }
+    if (isset($data["fields"]) && is_array($data["fields"])) {
+      for ($i = 0; $i < count($data["fields"]); $i++) {
+        $data["fields"][$i] = $this->splitArray($data["fields"][$i]);
+      }
+    }
     return $data;
+  }
+
+  protected function getTableName($node) {
+    $table = NULL;
+    $parent = $node->getParent();
+    if (!$parent) {
+      $table = $node->getName();
+    } else {
+      $table = $this->meta->getTableNameFromRelation($parent->getTable(), $node->getName());
+    }
+    return $table;
   }
 
   public function buildNode($type, $data, $parent = NULL) {
     $meta = $this->meta;
 
-    $data = $this->sliceDottedRelation($data);
-
     $current = new $type();
-
     $current->setGenerated(!!$data["generated"]);
     $current->setName($data["name"]);
     $current->setAlias($data["alias"]);
@@ -60,81 +70,79 @@ class SegmentBuilder
     $current->setParent($parent);
 
     if ($current instanceof Relation) {
-      if (!$parent) {
-        $current->setTable($data["name"]);
-      } else {
-        $table = $meta->getTableNameFromRelation($parent->getTable(), $data["name"]);
-        if (!$table) {
-          throw new \Exception("Relation: \"" . $current->getName() . "\" doesn't exist in table \"" . $parent->getName() . "\"", 1);
-        }
-        $current->setTable($table);
+      $table = $this->getTableName($current);
+      if (!$table) {
+        throw new \Exception("Relation: \"" . $current->getName() . "\" doesn't exist in table \"" . $parent->getName() . "\"", 1);
       }
-    }
+      $current->setTable($table);
 
-    if (isset($data["fields"]) && is_array($data["fields"])) {
-      foreach ($data["fields"] as $field) {
-        $obj = NULL;
-        $name = explode(".", $field["name"]);
-        $join = $meta->getRelationConnections($current->getTable(), $name[0]);
-        if (empty($field["fields"]) && strpos($field["name"], ".") === false && $join == NULL) {
-
-          if (!$meta->hasField($current->getTable(), $field["name"])) {
-            continue;
-          }
-
-          $field["visible"] = true;
-
-          $obj = $this->buildNode('\\fitch\fields\\Field', $field, $current);
-        } else { // relation
-          $cardinality = "OneRelation";
-          if ($meta->getCardinality($current->getTable(), $name[0]) == "many") {
-            $cardinality = "ManyRelation";
-          }
-          $obj = $this->buildNode("\\fitch\\fields\\" . $cardinality, $field, $current);
-        }
-        $obj->setParent($current);
-        $current->addChild($obj);
+      $children = $data["fields"];
+      if (!isset($children) || !is_array($children)) {
+        // add all fields if none are specified
+        $children = $meta->getFields($current->getTable());
       }
-    } else {
-      if ($current instanceof Relation) {
-        $fields = $meta->getFields($current->getTable());
-        if (is_array($fields)) {
-          foreach($fields as $field) {
-            $field = is_array($field)? $field : array("name" => $field);
-            $field = $this->buildNode("\\fitch\\fields\\" . "Field", $field, $current);
-            $field->setParent($current);
-            $current->addChild($field);
-          }
-        }
-      }
-    }
 
-    if ($current instanceof Relation) {
-      //print_r($current->getChildren());exit;
+      $this->manageChildren($current, $children);
+
       if ($current->hasVisibleFields() || !$parent) {
-        $this->createHashField($current);
+        $this->createPkField($current);
       }
 
       $current->setConditions($data["conditions"]);
 
-      for($i = 0; $i < count($data["functions"]); $i++) {
-
-        $function = $data["functions"][$i];
-        if ($function["name"] == "sort") {
-          for($y = 0; $y < count($function["params"]); $y++) {
-            $current->addSort($function["params"][$y][0], $function["params"][$y][1]);
-          }
-        }
-        if ($function["name"] == "limit") {
-          $current->limit($function["params"][0], $function["params"][1]);
-        }
-      }
+      $this->manageFunctions($current, $data["functions"]);
     }
     $current->setMany($this->meta->isMany($current));
     return $current;
   }
 
-  protected function createHashField($node) {
+  protected function manageChildren($current, $fields) {
+    if ($fields == NULL || !is_array($fields) || count($fields) == 0) {
+      return;
+    }
+    $meta = $this->meta;
+    foreach ($fields as $field) {
+      if (is_string($field)) {
+        $field = array("name" => $field);
+      }
+      $obj = NULL;
+      $join = $meta->getRelationConnections($current->getTable(), $field["name"]);
+      if (empty($field["fields"]) && $join == NULL) {
+
+        if (!$meta->hasField($current->getTable(), $field["name"])) {
+          continue;
+        }
+
+        $field["visible"] = true;
+
+        $obj = $this->buildNode('\\fitch\fields\\Field', $field, $current);
+      } else { // relation
+        $cardinality = "OneRelation";
+        if ($meta->getCardinality($current->getTable(), $field["name"]) == "many") {
+          $cardinality = "ManyRelation";
+        }
+        $obj = $this->buildNode("\\fitch\\fields\\" . $cardinality, $field, $current);
+      }
+      $obj->setParent($current);
+      $current->addChild($obj);
+    }
+  }
+
+  protected function manageFunctions($current, $functions) {
+    for($i = 0; $i < count($functions); $i++) {
+      $function = $functions[$i];
+      if ($function["name"] == "sort") {
+        for($y = 0; $y < count($function["params"]); $y++) {
+          $current->addSort($function["params"][$y][0], $function["params"][$y][1]);
+        }
+      }
+      if ($function["name"] == "limit") {
+        $current->limit($function["params"][0], $function["params"][1]);
+      }
+    }
+  }
+
+  protected function createPkField($node) {
     $primary_key = $this->meta->getPrimaryKeyName($node);
     $primary_key_field = new PrimaryKeyHash();
     $primary_key_field->setPrimaryKey(array($primary_key));
