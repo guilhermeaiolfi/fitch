@@ -33,14 +33,6 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
             "schools.id" => "school_department.school_id",
             "school_department.department_id" => "departments.id"
           )
-        ),
-        "courses" => array(
-          "table" => "departments",
-          "cardinality" => "many",
-          "on" => array(
-            "schools.id" => "school_department.school_id",
-            "school_department.department_id" => "departments.id"
-          )
         )
       )
     ),
@@ -102,7 +94,7 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     )
   );
 
-  public function testNoFields()
+  /*public function testNoFields()
   {
     $meta = $this->meta;
     $meta = new Meta($meta);
@@ -576,6 +568,59 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
 
     $sql = $queries[0]->getSql();
     $this->assertEquals($sql_expected, $sql);
+  }*/
+
+  public function testNestedSideBySide()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $ql = "/departments{name, schools{name}, courses{name}}";
+
+    $segment = $parser->parse($ql);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
+    $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
+
+    $queries = $generator->getQueries();
+    $sql_expected = 'SELECT departments_0.id, departments_0.name, schools_1.id AS schools_1_id, schools_1.name AS schools_1_name, courses_1.id AS courses_1_id, courses_1.name AS courses_1_name FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id, schools_0.name FROM schools AS schools_0) schools_1 ON (schools_1.id = school_department_0.school_id) INNER JOIN department_course department_course_0 ON (department_course_0.department_id = departments_0.id) INNER JOIN (SELECT courses_0.id, courses_0.name FROM courses AS courses_0) courses_1 ON (courses_1.id = department_course_0.course_id)';
+
+    $sql = $queries[0]->getSql();
+    $this->assertEquals($sql_expected, $sql);
+
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
+
+    $results = array(
+      array(1, 'Department #1', 1, 'School #1', 1, "Computer Science"),
+      array(1, 'Department #1', 2, 'School #2', 1, "Computer Science")
+    );
+
+    $nested = $populator->getResult($results);
+    print_r($nested);exit;
+    $result = array (
+      "departments" => array (
+        0 => array(
+          "name" => "Department #1",
+          "schools" => array(
+            0 => array(
+              "name" => "School #1"
+            ),
+            1 => array(
+              "name" => "School #2"
+            )
+          ),
+          "courses" => array(
+            0 => array(
+              "name" => "Computer Science"
+            )
+          )
+        )
+      )
+    );
+    //print_r($nested);
+    $this->assertEquals($result, $nested);
   }
 }
 

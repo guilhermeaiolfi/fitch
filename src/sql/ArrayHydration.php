@@ -72,11 +72,33 @@ class ArrayHydration {
     }
   }
 
+  public function &getPointerFor($node, &$relations) {
+    // if ($parent = $relation->getParent())
+    //   return $relations[$parent->getName()];
+    // return NULL;
+    if (!$node) {
+      return NULL;
+    }
+    while ($node) {
+      if (!$node->isGenerated()) {
+        break;
+      }
+      $node = $node->getParent();
+    }
+    //echo "\n-------------------------------\n";
+    for($i = count($relations) - 1; $i >= 0; $i--) {
+      //echo $i . " " . $relations[$i]["_relation"]->getName() . " " . $parent->getName() . " " . $relation->getName() . "\n";
+      if ($relations[$i]["_relation"]->getName() == $node->getName()) {
+        return $relations[$i]["_pointer"];
+      }
+    }
+    return NULL;
+  }
   public function populateRow(&$result, $row) {
     $arr = &$result;
+    $oba = array();
     $relations = array();
     $ids = array();
-
     $column_index = 0;
     $pending = array($this->segment);
 
@@ -84,6 +106,7 @@ class ArrayHydration {
       $name = $node->getAliasOrName();
 
       if ($node instanceof Relation) {
+
         if ($children = $node->getChildren()) {
           foreach ($children as $child) {
             $pending[] = $child;
@@ -92,9 +115,21 @@ class ArrayHydration {
             continue;
           }
         }
+
+        $pointer =& $this->getPointerFor($node->getParent(), $relations);
+
+
+        if ($pointer != NULL) {
+          $arr = $pointer;
+          //continue;
+        } else {
+          $arr = &$result;
+        }
+
         if (!is_array($arr[$name])) {
           $arr[$name] = array();
         }
+
 
         $id = $row[$column_index];
 
