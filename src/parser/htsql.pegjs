@@ -26,8 +26,8 @@ start
   / FieldBlock
 
 SegmentExtra
-  = "." Identifier "(" ArgumentList? ")"
-  / "." "sort" "(" SortList? ")"
+  = "." "sort" "(" SortList? ")"
+  / "." Identifier "(" ArgumentList? ")"
   / "." Identifier
 
 

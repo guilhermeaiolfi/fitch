@@ -19,7 +19,8 @@ start
   / FieldBlock
 
 SegmentExtra
-  = "." Identifier "(" ArgumentList? ")"
+  = "." "sort" "(" SortList? ")"
+  / "." Identifier "(" ArgumentList? ")"
   / "." Identifier
 
 Segment
@@ -89,13 +90,19 @@ Locator
   / Identifier
 
 LocatorList
-  = first:Locator rest:(whitespaces? "," whitespaces? Locator)* {
+  = first:Locator rest:(__ "," __ Locator)* {
        return buildList(first, rest, 1);
      }
 
 SortList
-  = first:(ColumnIdentifier SortDirection?) whitespaces? rest:("," whitespaces? (ColumnIdentifier SortDirection?))* {
-       return buildList(first, rest, 2);
+  = first:(ColumnIdentifier SortDirection?) __ rest:("," __ (ColumnIdentifier SortDirection?))* {
+       var result = [], i;
+       result.push( [ first[0], first[1] ]);
+
+      for (i = 0; i < rest.length; i++) {
+        result.push( rest[i][2] );
+      }
+      return result;
      }
 
 ArgumentList

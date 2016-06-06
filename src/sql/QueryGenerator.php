@@ -131,7 +131,7 @@ class QueryGenerator extends Generator {
   }
 
   public function buildRest($relation, $query) {
-    $conditions = $this->replaceFieldWithCOlumns($relation->getConditions(), $relation);
+    $conditions = $this->replaceFieldWithColumns($relation->getConditions(), $relation);
     $query->setConditions($conditions);
     $function = $relation->getFunction("sort");
     for($i = 0; $i < count($function); $i++) {
