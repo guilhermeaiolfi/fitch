@@ -266,7 +266,7 @@ class Query extends Table {
     $sort_by = $this->sort_by;
     $sort_by_count = count($sort_by);
     if ($sort_by_count > 0) {
-      $sql .= " SORT BY ";
+      $sql .= " ORDER BY ";
     }
     for ($i = 0; $i < count($sort_by); $i++) {
       $column = $sort_by[$i]["column"];
