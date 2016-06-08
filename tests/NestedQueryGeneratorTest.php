@@ -621,6 +621,92 @@ class NestedQueryGenerationTest extends PHPUnit_Framework_TestCase
     //print_r($nested);
     $this->assertEquals($result, $nested);
   }
+  public function testNestedOutOfOrder()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $ql = "/departments{name, schools{name}, id}";
+
+    $segment = $parser->parse($ql);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
+    $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
+
+    $queries = $generator->getQueries();
+    $sql_expected = 'SELECT departments_0.name, schools_1.id AS schools_1_id, schools_1.name AS schools_1_name, departments_0.id FROM departments AS departments_0 INNER JOIN school_department school_department_0 ON (school_department_0.department_id = departments_0.id) INNER JOIN (SELECT schools_0.id, schools_0.name FROM schools AS schools_0) schools_1 ON (schools_1.id = school_department_0.school_id)';
+
+    $sql = $queries[0]->getSql();
+    $this->assertEquals($sql_expected, $sql);
+
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
+
+    $results = array(
+      array('Department #1', 1, 'School #1', 1, "Computer Science", 1),
+      array('Department #1', 2, 'School #2', 1, "Computer Science", 1)
+    );
+
+    $nested = $populator->getResult($results);
+    //print_r($nested);exit;
+    $result = array (
+      "departments" => array (
+        0 => array(
+          "name" => "Department #1",
+          "schools" => array(
+            0 => array(
+              "name" => "School #1"
+            ),
+            1 => array(
+              "name" => "School #2"
+            )
+          ),
+          "id" => 1
+        )
+      )
+    );
+    //print_r($nested);
+    $this->assertEquals($result, $nested);
+  }
+  public function testNestedWithAliasOutOfOrder() {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $ql = "/schools{id, departments.name :as department_name, name}";
+
+    $segment = $parser->parse($ql);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
+    $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
+
+    $queries = $generator->getQueries();
+    $sql_expected = "SELECT schools_0.id, departments_1.id AS departments_1_id, departments_1.name AS departments_1_name, schools_0.name FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN (SELECT departments_0.id, departments_0.name FROM departments AS departments_0) departments_1 ON (departments_1.id = school_department_0.department_id)";
+
+    $sql = $queries[0]->getSql();
+    $this->assertEquals($sql_expected, $sql);
+
+    $populator = new \fitch\sql\ArrayHydration($segment, $meta);
+
+    $rows = array (
+              array(1, 1, "Department #1", "School #1"),
+              array(2, 1, "Department #1", "School #2"),
+              array(1, 2, "Department #2", "School #1")
+            );
+
+    $nested = $populator->getResult($rows);
+
+    $result = array(
+      "schools" => array(
+        0 => array("id" => 1, "department_name" => array(0 => "Department #1", 1 => "Department #2"), "name" => "School #1"),
+        1 => array("id" => 2, "department_name" => array(0 => "Department #1"),
+"name" => "School #2")
+      )
+    );
+    $this->assertEquals($result, $nested);
+  }
 }
 
 ?>

@@ -95,23 +95,22 @@ class ArrayHydration {
     }
 
     if ($children = $node->getChildren()) {
+      // FOR QueryGenerator (not NestedQueryGenerator) it needs to loop two times
+      // because fields are grouped together and relation are pulled to the end
       foreach ($children as $child) {
         if ($child instanceof Field) {
           if ($child->isVisible()) {
             $this->setFieldValue($pointer, $child, $row[$column_index]);
           }
           $column_index++;
-        }
-      }
-      foreach ($children as $child) {
-        if ($child instanceof Relation) {
+        } else if ($child instanceof Relation) {
           $column_index = $this->populateRelation($pointer, $child, $row, $ids, $column_index);
         }
       }
     }
     return $column_index;
   }
-    
+
   public function populateRow(&$result, $row) {
     $ids = array();
     $this->populateRelation($result, $this->segment, $row, $ids, 0);

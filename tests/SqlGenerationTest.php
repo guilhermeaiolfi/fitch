@@ -194,29 +194,6 @@ class SqlGenerationTest extends PHPUnit_Framework_TestCase
       )
     );
 
-    $tests["unordered columns in multi-level query"] = array(
-      "token" => array(
-        "name" => "schools",
-        "type" => "Segment",
-        "fields" => array(
-          array("name" => "id"),
-          array(
-            "name" => "departments.name",
-            "alias" => "department_name"
-          ),
-          array("name" => "name"),
-        )
-      ),
-      "sql" => "SELECT schools_0.id, schools_0.name, departments_0.id, departments_0.name FROM schools AS schools_0 INNER JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) INNER JOIN departments departments_0 ON (departments_0.id = school_department_0.department_id)",
-      "result" => array(
-        "schools" => array(
-          0 => array("id" => 1, "department_name" => array(0 => "Department #1", 1 => "Department #2"), "name" => "School #1"),
-          1 => array("id" => 2, "department_name" => array(0 => "Department #1"),
-"name" => "School #2")
-        )
-      )
-    );
-
     $tests["conditions"] = array(
       "token" => array(
         "name" => "schools",

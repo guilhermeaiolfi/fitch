@@ -112,7 +112,6 @@ class NestedQueryGenerator extends QueryGenerator {
     while ($field = array_shift($fields)) {
       if ($field instanceof Relation) {
         if ($field->getName() != $relation->getName()) {
-          //echo $relation->getName();
           $this->addJoins($relation, $field, $query);
         }
       } else {

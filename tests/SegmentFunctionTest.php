@@ -111,7 +111,7 @@ class SegmentFunctionTest extends PHPUnit_Framework_TestCase
     $sql = $queries[0]->getSql($meta);
 
     $this->assertEquals($result, $expected);
-    $this->assertEquals("SELECT schools_0.id, schools_0.name FROM schools AS schools_0 SORT BY schools_0.id ASC, schools_0.name DESC", $sql);
+    $this->assertEquals("SELECT schools_0.id, schools_0.name FROM schools AS schools_0 ORDER BY schools_0.id ASC, schools_0.name DESC", $sql);
   }
 }
 
