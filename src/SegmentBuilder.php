@@ -76,6 +76,15 @@ class SegmentBuilder
       }
       $current->setTable($table);
 
+      $types = array(
+        "<" => "LEFT",
+        ">" => "RIGHT",
+        "!" => "INNER"
+      );
+      if ($data["type"]) {
+        $current->setType($types[$data["type"]]);
+      }
+
       $children = $data["fields"];
       if (!isset($children) || !is_array($children)) {
         // add all fields if none are specified

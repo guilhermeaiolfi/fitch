@@ -16,8 +16,9 @@ class NestedQueryGenerator extends QueryGenerator {
   protected $cache = array();
   protected $alias_manager = NULL;
 
-  protected function createJoin($query, $relation, $parent, $join_id, $parent_id, $parent_table = NULL) {
+  protected function createJoin($type, $query, $relation, $parent, $join_id, $parent_id, $parent_table = NULL) {
     $join = new \fitch\sql\JoinOne();
+    $join->setType($type);
 
     $join_table = NULL;
     if (is_string($relation)) { // pivot table
@@ -74,7 +75,7 @@ class NestedQueryGenerator extends QueryGenerator {
       list($parent_table_name, $parent_id) = explode(".", $keys[0]);
       list($join_table_name, $join_id) = explode(".", $connections[$keys[0]]);
 
-      $join = $this->createJoin($query, count($keys) == 1? $relation : $join_table_name, $parent, $join_id, $parent_id);
+      $join = $this->createJoin($relation->getType(), $query, count($keys) == 1? $relation : $join_table_name, $parent, $join_id, $parent_id);
       $join_table = $join->getTable();
 
       $query->join($join);
@@ -84,7 +85,7 @@ class NestedQueryGenerator extends QueryGenerator {
         list($parent_table_name, $parent_id) = explode(".", $keys[1]);
         list($join_table_name, $join_id) = explode(".", $connections[$keys[1]]);
 
-        $join = $this->createJoin($query, $relation, $parent, $join_id, $parent_id, $join_table);
+        $join = $this->createJoin($relation->getType(), $query, $relation, $parent, $join_id, $parent_id, $join_table);
 
         $query->join($join);
       }
@@ -93,7 +94,7 @@ class NestedQueryGenerator extends QueryGenerator {
       list($parent_table_name, $parent_id) = explode(".", $keys[0]);
       list($join_table_name, $join_id) = explode(".", $connections[$keys[0]]);
 
-      $join = $this->createJoin($query, $relation, $parent, $join_id, $parent_id);
+      $join = $this->createJoin($relation->getType(), $query, $relation, $parent, $join_id, $parent_id);
 
       $query->join($join);
     }

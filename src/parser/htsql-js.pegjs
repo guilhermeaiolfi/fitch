@@ -118,9 +118,17 @@ FieldList
 SegmentField
   = name:Identifier
 
+RelationType
+  = "!"
+  / "<"
+  / ">"
+
 Field
-  = name:DottedIdentifier alias:(__ ":as" __ field:Identifier)? fields:(FieldBlock)? {
+  = type:RelationType? name:DottedIdentifier alias:(__ ":as" __ field:Identifier)? fields:(FieldBlock)? {
     var result = { name: name }
+    if (type) {
+      result["type"] = type;
+    }
     if (alias) {
       result["alias"] = alias[3];
     }

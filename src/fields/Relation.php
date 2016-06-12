@@ -8,9 +8,10 @@ class Relation extends \fitch\fields\Selectable {
   protected $table = NULL;
   protected $functions = array();
   protected $conditions = NULL;
+  protected $type = "INNER";
 
   protected $many = true;
-  
+
   public function isMany() {
     return $this->many;
   }
@@ -19,13 +20,20 @@ class Relation extends \fitch\fields\Selectable {
     $this->many = $many;
   }
 
-
   public function getFunctions() {
     return $this->functions;
   }
 
   public function getFunction($name) {
     return $this->functions[$name];
+  }
+
+  public function setType($type) {
+    return $this->type = $type;
+  }
+
+  public function getType() {
+    return $this->type;
   }
 
   public function getConditions() {

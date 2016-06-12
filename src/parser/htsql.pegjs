@@ -120,9 +120,17 @@ FieldList
 SegmentField
   = name:Identifier
 
+RelationType
+  = "!"
+  / "<"
+  / ">"
+
 Field
-  = name:DottedIdentifier alias:(__ ":as" __ alias:Identifier)? fields:(FieldBlock)? {
+  = type:RelationType? name:DottedIdentifier alias:(__ ":as" __ alias:Identifier)? fields:(FieldBlock)? {
     $result = array( "name" => $name );
+    if ($type) {
+      $result["type"] = $type;
+    }
     if ($alias) {
       $result["alias"] = $alias[3];
     }

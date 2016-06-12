@@ -453,7 +453,7 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($result, $nested);
   }
 
-  
+
   public function testNestedManyRelation()
   {
     $meta = $this->meta;
@@ -511,6 +511,26 @@ class InnerJoinTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($result, $nested);
   }
 
+  public function testRelationType()
+  {
+    $meta = $this->meta;
+    $meta = new Meta($meta);
+
+    $parser = new Parser();
+
+    $ql = "/schools{name, <departments{id}}";
+
+    $segment = $parser->parse($ql);
+    $builder = new \fitch\SegmentBuilder($meta);
+    $segment = $builder->buildSegment($segment);
+    $generator = new \fitch\sql\NestedQueryGenerator($segment, $meta);
+
+    $queries = $generator->getQueries();
+    $sql_expected = 'SELECT schools_0.id, schools_0.name, departments_1.id AS departments_1_id FROM schools AS schools_0 LEFT JOIN school_department school_department_0 ON (school_department_0.school_id = schools_0.id) LEFT JOIN (SELECT departments_0.id FROM departments AS departments_0) departments_1 ON (departments_1.id = school_department_0.department_id)';
+
+    $sql = $queries[0]->getSql();
+    $this->assertEquals($sql_expected, $sql);
+  }
 }
 
 
