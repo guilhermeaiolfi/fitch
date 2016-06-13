@@ -71,12 +71,21 @@ class ArrayHydration {
   public function populateRelation(&$arr, $node, $row, $ids, $column_index) {
     $name = $node->getAliasOrName();
     $pointer = &$arr;
+    $empty = false;
+
+    $id = $row[$column_index];
+
     if (!$node->isGenerated()) {
       if (!is_array($arr[$name])) {
         $arr[$name] = array();
       }
+    }
 
-      $id = $row[$column_index];
+    if (!$id) {
+      //probably because $relation->getType() == "<"
+      // it doesn't matter, we can't set values
+      $empty = true;
+    } else if (!$node->isGenerated()) {
 
       $ids[] = array($name => $id);
 
@@ -99,7 +108,7 @@ class ArrayHydration {
       // because fields are grouped together and relation are pulled to the end
       foreach ($children as $child) {
         if ($child instanceof Field) {
-          if ($child->isVisible()) {
+          if ($child->isVisible() && !$empty) {
             $this->setFieldValue($pointer, $child, $row[$column_index]);
           }
           $column_index++;
